@@ -1,0 +1,83 @@
+<?php
+
+namespace core;
+
+/*
+  APIPHP开源框架
+
+  ©2023 APIPHP.com
+
+  框架版本号：1.0.0
+*/
+
+class Ftp
+{
+
+    //上传
+    public static function up($UnionData = []): bool
+    {
+        $From = Common::quickParameter($UnionData, 'from', '本地路径');
+        $To = Common::quickParameter($UnionData, 'to', '远程路径');
+        $Timeout = Common::quickParameter($UnionData, 'timeout', '超时时间', false, 90);
+
+        $From = Common::diskPath($From);
+
+        $Connect = ftp_connect(
+            $_SERVER['APIPHP']['Config']['Ftp']['server'],
+            $_SERVER['APIPHP']['Config']['Ftp']['port'],
+            $Timeout
+        );
+        $Login = ftp_login(
+            $Connect,
+            $_SERVER['APIPHP']['Config']['Ftp']['user'],
+            $_SERVER['APIPHP']['Config']['Ftp']['password']
+        );
+        if ((!$Connect) || (!$Login)) {
+            Api::wrong(['level' => 'F', 'detail' => 'Error#M.1.0', 'code' => 'M.1.0']);
+        }
+        $Upload = ftp_put($Connect, $To, $From, FTP_ASCII);
+        ftp_close($Connect);
+        if (!$Upload) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    //下载
+    public static function down($UnionData = []): bool
+    {
+        $From = Common::quickParameter($UnionData, 'from', '远程路径');
+        $To = __ROOT__ . Common::quickParameter($UnionData, 'to', '本地路径');
+        $Timeout = Common::quickParameter($UnionData, 'timeout', '超时时间', false, 90);
+
+        $To = Common::diskPath($To);
+
+        $Connect = ftp_connect(
+            $_SERVER['APIPHP']['Config']['Ftp']['server'],
+            $_SERVER['APIPHP']['Config']['Ftp']['port'],
+            $Timeout
+        );
+        $Login = ftp_login(
+            $Connect,
+            $_SERVER['APIPHP']['Config']['Ftp']['user'],
+            $_SERVER['APIPHP']['Config']['Ftp']['password']
+        );
+        if ((!$Connect) || (!$Login)) {
+            Api::wrong(['level' => 'F', 'detail' => 'Error#M.1.0', 'code' => 'M.1.0']);
+        }
+        $Download = ftp_get($Connect, $To, $From, FTP_ASCII);
+        ftp_close($Connect);
+        if (!$Download) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    //调用方法不存在
+    public static function __callStatic($Method, $Parameters)
+    {
+        Common::unknownStaticMethod(__CLASS__, $Method);
+    }
+}

@@ -29,8 +29,8 @@
 	<![endif]-->
     <div class="app" id="app">
         <div class="note note-slide" v-if="version.remote.status=='success'&&version.remote.value==version.native.value">恭喜！您当前使用的框架（V{{version.remote.value}}）是最新版本。</div>
-        <div class="note note-slide note-danger" v-if="version.remote.status=='success'&&version.remote.value!=version.native.value">你Out啦！APIPHP框架已发布新版本，还不快去看看！<a href="https://www.apiphp.com" target="_blank"><span class="note-link">立即下载</span></a></div>
-        <div class="note note-slide note-danger" v-if="version.remote.status=='error'">框架最新版本号获取失败</div>
+        <div class="note note-slide note-error" v-if="version.remote.status=='success'&&version.remote.value!=version.native.value">你Out啦！APIPHP框架已发布新版本，还不快去看看！<a href="https://www.apiphp.com" target="_blank"><span class="note-link">立即下载</span></a></div>
+        <div class="note note-slide note-error" v-if="version.remote.status=='error'">框架最新版本号获取失败</div>
         <div class="main">
             <div class="main-logo">
                 <img src="/img/logo.svg"/>
@@ -66,30 +66,15 @@
             </div>
             <div class="main-devtool" :style="{'display': windowName=='devtool'?'':'none'}">
                 <div class="main-devtool-box">
-                    <div class="main-devtool-url">
-                        <div class="main-devtool-url-method">
-                            <select v-model="request.method">
-                                <option value="get">GET</option>
-                                <option value="post">POST</option>
-                                <option value="put">PUT</option>
-                                <option value="delete">DELETE</option>
-                            </select>
-                        </div>
-                        <div class="main-devtool-url-input">
-                            <input  v-model="request.url" placeholder="请输入接口地址" autocomplete="off">
-                        </div>
-                        <div class="main-devtool-url-submit">
-                            <div class="main-devtool-url-submit-icon" @click="sendRequest()"></div>
-                        </div>
-                    </div>
                     <div class="main-devtool-request">
                         <div class="main-devtool-request-menu">
                             <div :class="{'main-devtool-request-menu-tab':true, 'main-devtool-request-menu-hover':(devtoolTab.now==key?true:false)}" @click="changeTab(key)" v-for="(val,key) in devtoolTab.list" v-html="val"></div>
                         </div>
                         <div class="main-devtool-request-input">
                             <div class="main-devtool-request-input-option">
-                                <div class="main-devtool-request-input-option-select">
-                                    <select v-model="request.content_type" v-if="devtoolTab.now=='body'" @change="cleanAllFileValue()" v-if="devtoolTab.now!='favorites'">
+                                <div></div>
+                                <div class="main-devtool-request-input-option-select" v-if="devtoolTab.now=='body'">
+                                    <select v-model="request.content_type" @change="cleanAllFileValue()" v-if="devtoolTab.now!='favorites'">
                                         <option value="">无</option>
                                         <option value="multipart/form-data">multipart/form-data</option>
                                         <option value="application/x-www-form-urlencoded">application/x-www-form-urlencoded</option>
@@ -100,11 +85,12 @@
                                     </select>
                                 </div>
                                 <div class="main-devtool-request-input-option-btns">
-                                    <div class="main-devtool-request-input-option-btns-btn" v-if="devtoolTab.now!='favorites'&&devtoolTab.now!='auth'&&(devtoolTab.now!='body'||request.content_type=='multipart/form-data'||request.content_type=='application/x-www-form-urlencoded')" @click="openMask('input')">导入参数</div>
-                                    <div class="main-devtool-request-input-option-btns-btn" v-if="devtoolTab.now!='favorites'&&devtoolTab.now!='auth'&&(devtoolTab.now!='body'||request.content_type=='multipart/form-data'||request.content_type=='application/x-www-form-urlencoded')" @click="openMask('output')">导出参数</div>
-                                    <div class="main-devtool-request-input-option-btns-btn" @click="openMask('save')" v-if="devtoolTab.now!='favorites'">保存接口</div>
-                                    <div class="main-devtool-request-input-option-btns-btn" @click="deleteInput()" v-if="devtoolTab.now!='favorites'">清空</div>
-                                    <div class="main-devtool-request-input-option-btns-btn" @click="deleteFavorites()" v-if="devtoolTab.now=='favorites'">清空收藏</div>
+                                    <div class="main-devtool-request-input-option-btns-btn main-devtool-request-input-option-btns-btn-hover" @click="sendRequest()" v-if="devtoolTab.now!='favorites'">发送数据</div>
+                                    <div class="main-devtool-request-input-option-btns-btn" v-if="devtoolTab.now!='url'&&devtoolTab.now!='favorites'&&devtoolTab.now!='auth'&&(devtoolTab.now!='body'||request.content_type=='multipart/form-data'||request.content_type=='application/x-www-form-urlencoded')" @click="openMask('input')">导入</div>
+                                    <div class="main-devtool-request-input-option-btns-btn" v-if="devtoolTab.now!='url'&&devtoolTab.now!='favorites'&&devtoolTab.now!='auth'&&(devtoolTab.now!='body'||request.content_type=='multipart/form-data'||request.content_type=='application/x-www-form-urlencoded')" @click="openMask('output')">导出</div>
+                                    <div class="main-devtool-request-input-option-btns-btn" @click="openMask('save')" v-if="devtoolTab.now!='favorites'">保存</div>
+                                    <div class="main-devtool-request-input-option-btns-btn" @click="deleteInput()" v-if="devtoolTab.now!='favorites'">重置</div>
+                                    <div class="main-devtool-request-input-option-btns-btn" @click="deleteFavorites()" v-if="devtoolTab.now=='favorites'">清空</div>
                                 </div>
                             </div>
                             <div class="main-devtool-request-input-content">
@@ -132,6 +118,21 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div class="main-devtool-request-input-content-table" v-if="devtoolTab.now=='url'">
+                                    <div class="main-devtool-request-input-option-url" v-if="devtoolTab.now!='favorites'">
+                                        <div class="main-devtool-request-input-option-url-method">
+                                            <select v-model="request.method">
+                                                <option value="get">GET</option>
+                                                <option value="post">POST</option>
+                                                <option value="put">PUT</option>
+                                                <option value="delete">DELETE</option>
+                                            </select>
+                                        </div>
+                                        <div class="main-devtool-request-input-option-url-input">
+                                            <input  v-model="request.url" placeholder="请输入接口地址" autocomplete="off">
+                                        </div>
+                                    </div>
+                                </div>
                                 <div class="main-devtool-request-input-content-table" v-if="devtoolTab.now=='body'&&request.content_type!='multipart/form-data'&&request.content_type!='application/x-www-form-urlencoded'">
                                     <textarea placeholder="请输入文本" v-model="input.textBody"></textarea>
                                 </div>
@@ -148,7 +149,7 @@
                                         </div>
                                         <div class="main-devtool-request-input-content-table-row-option" @click="deleteRow(key)" v-if="request.show[devtoolTab.now].length>1"><span>删除</span></div>
                                     </div>
-                                    <div class="main-devtool-request-input-content-table-addrow" @click="addRow()">添加一行</div>
+                                    <div class="main-devtool-request-input-content-table-addrow" @click="addRow()">+添加一行</div>
                                 </div>
                                 <div class="main-devtool-request-input-content-table" :style="{'display':(devtoolTab.now=='body'&&(request.content_type=='multipart/form-data'||request.content_type=='application/x-www-form-urlencoded')?'':'none')}">
                                     <div class="main-devtool-request-input-content-table-row" v-for="(item,key) in request.show.body">
@@ -178,7 +179,7 @@
                                         </div>
                                         <div class="main-devtool-request-input-content-table-row-option" @click="deleteRow(key)" v-if="request.show.body.length>1"><span>删除</span></div>
                                     </div>
-                                    <div class="main-devtool-request-input-content-table-addrow" @click="addRow()">添加一行</div>
+                                    <div class="main-devtool-request-input-content-table-addrow" @click="addRow()">+添加一行</div>
                                 </div>
                                 <div class="main-devtool-request-input-content-table" v-if="devtoolTab.now=='favorites'">
                                     <div class="main-devtool-request-input-content-table-row" v-for="(item,key) in favorites">
@@ -274,8 +275,9 @@
             },
             "windowName":'devtool',
             "devtoolTab":{
-                "now":"headers",
+                "now":"url",
                 "list":{
+                    "url":"URL",
                     "headers":"头信息<br>（Headers）",
                     "query":"查询<br>（Query）",
                     "body":"正文<br>（Body）",
@@ -580,7 +582,11 @@
                 that.mask='';
             },
             deleteInput:function(){
-                if(that.devtoolTab.now=='headers'){
+                if(that.devtoolTab.now=='url'){
+                    that.request.url="/version";
+                    that.input.headers='';
+                }
+                else if(that.devtoolTab.now=='headers'){
                     that.request.show.headers=[
                         {
                             "checked":true,

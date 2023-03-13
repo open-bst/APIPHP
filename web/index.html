@@ -935,6 +935,7 @@
                 if(that.history.length>0){
                     that.request.method=that.history[0].method;
                     that.request.url=that.history[0].url;
+                    that.$options.methods.changeMethod();
                 }
             });
         }

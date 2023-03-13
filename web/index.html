@@ -74,7 +74,7 @@
                             <div class="main-devtool-request-input-option">
                                 <div></div>
                                 <div class="main-devtool-request-input-option-select" v-if="devtoolTab.now=='body'">
-                                    <select v-model="request.content_type" @change="cleanAllFileValue()" v-if="devtoolTab.now!='favorites'">
+                                    <select v-model="request.content_type" @change="cleanAllFileValue()" v-if="devtoolTab.now!='favorites'&&request.method!='get'">
                                         <option value="">无</option>
                                         <option value="multipart/form-data">multipart/form-data</option>
                                         <option value="application/x-www-form-urlencoded">application/x-www-form-urlencoded</option>
@@ -119,22 +119,33 @@
                                     </div>
                                 </div>
                                 <div class="main-devtool-request-input-content-table" v-if="devtoolTab.now=='url'">
-                                    <div class="main-devtool-request-input-option-url" v-if="devtoolTab.now!='favorites'">
-                                        <div class="main-devtool-request-input-option-url-method">
-                                            <select v-model="request.method">
+                                    <div class="main-devtool-request-input-content-table-url" v-if="devtoolTab.now!='favorites'">
+                                        <div class="main-devtool-request-input-content-table-url-method">
+                                            <select v-model="request.method" @change="changeMethod()">
                                                 <option value="get">GET</option>
                                                 <option value="post">POST</option>
                                                 <option value="put">PUT</option>
                                                 <option value="delete">DELETE</option>
                                             </select>
                                         </div>
-                                        <div class="main-devtool-request-input-option-url-input">
+                                        <div class="main-devtool-request-input-content-table-url-input">
                                             <input  v-model="request.url" placeholder="请输入接口地址" autocomplete="off">
+                                        </div>
+                                    </div>
+                                    <div class="main-devtool-request-input-content-table-title">历史记录</div>
+                                    <div class="main-devtool-request-input-content-table-history">
+                                        <div class="main-devtool-request-input-content-table-history-list">
+                                            <div class="main-devtool-request-input-content-table-history-list-item"  @click="inputUrl(key)" v-for="(item,key) in history">
+                                                <div class="main-devtool-request-input-content-table-history-list-item-method" v-text="item.method.toUpperCase()"></div>
+                                                <div class="main-devtool-request-input-content-table-history-list-item-url" v-text="item.url"></div>
+                                            </div>
+                                            <div class="main-devtool-request-input-content-table-history-list-clean"  @click="cleanHistory()" v-if="history.length>0">清空</div>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="main-devtool-request-input-content-table" v-if="devtoolTab.now=='body'&&request.content_type!='multipart/form-data'&&request.content_type!='application/x-www-form-urlencoded'">
-                                    <textarea placeholder="请输入文本" v-model="input.textBody"></textarea>
+                                    <div class="main-devtool-request-input-content-table-empty" v-if="request.method=='get'">当请求方法设置为“GET”时，您无法指定请求头的Content-Type字段及Body。</div>
+                                    <textarea placeholder="请输入文本" v-model="input.textBody" v-if="request.method!='get'"></textarea>
                                 </div>
                                 <div class="main-devtool-request-input-content-table" v-if="devtoolTab.now=='headers'||devtoolTab.now=='query'">
                                     <div class="main-devtool-request-input-content-table-row" v-for="(item,key) in request.show[devtoolTab.now]">
@@ -192,6 +203,7 @@
                                         <div class="main-devtool-request-input-content-table-row-option main-devtool-request-input-content-table-row-option-active" @click="inputInfo(key)"><span>导入</span></div>
                                         <div class="main-devtool-request-input-content-table-row-option" @click="deleteInfo(key)"><span>删除</span></div>
                                     </div>
+                                    <div class="main-devtool-request-input-content-table-empty" v-if="favorites.length==0">收藏夹为空，去<a @click="changeTab('url')">新建</a>一个吧！</div>
                                 </div>
                                 <div class="main-devtool-request-input-content-table" v-if="devtoolTab.now=='auth'">
                                     <div class="main-devtool-request-input-content-table-row">
@@ -298,7 +310,7 @@
             "request":{
                 "name":"",
                 "timeout":1000,
-                "content_type":"multipart/form-data",
+                "content_type":"",
                 "method":"get",
                 "url":"/version",
                 "ready":{
@@ -356,7 +368,8 @@
                 "style":true,
                 "isJson":false
             },
-            "favorites":[]
+            "favorites":[],
+            "history":[]
         },
         created:function(){
             that=this
@@ -375,6 +388,14 @@
                 .catch(function (error) {
                     that.version.remote.status="error";
                 });
+            },
+            changeMethod: function(){
+                if(that.request.method=='get'){
+                    that.request.content_type='';
+                }
+                else{
+                    that.request.content_type='multipart/form-data';
+                }
             },
             sendRequest: function(){
                 if(that.request.url==''){
@@ -480,6 +501,16 @@
                     )
                 }
                 
+                if(that.history.length>0){
+                    if(that.history[0].method==that.request.method&&that.history[0].url==that.request.url){
+                        that.history.shift();
+                    }
+                }
+                if(that.history.length==20){
+                    that.history.length=that.history.length-1;
+                }
+                that.history.unshift({"method":that.request.method,"url":that.request.url});
+                localStorage.setItem('apiHistory',JSON.stringify(that.history));
                 
                 axios({
                     url:that.request.url+that.request.ready.query,
@@ -869,6 +900,22 @@
             inputInfo: function(key){
                 that.request=that.favorites[key];
             },
+            getHistory:function(){
+                var lsHistory=localStorage.getItem('apiHistory');
+                if(lsHistory===null){
+                    lsHistory='[]';
+                }
+                that.history=JSON.parse(lsHistory);
+            },
+            inputUrl: function(key){
+                that.request.method=that.history[key].method;
+                that.request.url=that.history[key].url;
+                that.$options.methods.changeMethod();
+            },
+            cleanHistory:function(){
+                that.history=[];
+                localStorage.setItem('apiHistory',JSON.stringify(that.history));
+            },
         },
         mounted:function (){
             this.$nextTick(function(){
@@ -878,10 +925,17 @@
                     that.version.native.value=response.data.version;
                     that.version.native.status="success";
                     that.$options.methods.getVersion();
+                    
                 })
                 .catch(function (error) {
                     that.version.native.status="error";
                 });
+                
+                that.$options.methods.getHistory();
+                if(that.history.length>0){
+                    that.request.method=that.history[0].method;
+                    that.request.url=that.history[0].url;
+                }
             });
         }
     });

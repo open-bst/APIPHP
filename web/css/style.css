@@ -366,66 +366,6 @@ td{
     box-sizing: border-box;
     justify-content: space-between
 }
-.main-devtool-request-input-option-url{
-	width: 62%;
-	display: flex;
-	position: relative;
-	box-sizing: border-box;
-    overflow: hidden;
-}
-.main-devtool-request-input-option-url-method{
-	flex-shrink: 0;
-	align-self: stretch;
-    background-color: #fff;
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    border: solid #c4c7ce;
-    justify-content: flex-end;
-    border-width: 2px 0 2px 2px;
-    border-radius: 6rem 0 0 6rem;
-    padding: 0 2.5%;
-}
-.main-devtool-request-input-option-url-method select{
-    height: 60%;
-    text-align: center;
-    text-align-last: center;
-    font-size: 16rem;
-    border-radius: 3px;
-    font-weight: bold;
-    color: #333;
-    background-color: #e9e9ea;
-    border: none;
-}
-.main-devtool-request-input-option-url-method select option{
-	text-align:center;
-}
-.main-devtool-request-input-option-url-input{
-	width: 100%;
-	font-size: 24rem;
-	line-height: 1;
-    border: solid #c4c7ce;
-    border-width: 2px 2px 2px 0;
-    border-radius: 0 6rem 6rem 0;
-    overflow: hidden
-}
-.main-devtool-request-input-option-url-input input{
-	width: 100%;
-	border: none;
-	font-size: 24rem;
-	line-height: 1;
-	padding: 1.3% 2.5%;
-    padding-left: 0;
-	box-sizing: border-box;
-	background: #fff;
-	color:#333;
-	text-align: left;
-    font-family: Consolas, "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", Monaco, "Courier New", "monospace", "Microsoft YaHei", 微软雅黑, 等线, 黑体;
-}
-.main-devtool-request-input-option-url-input input::-webkit-input-placeholder{
-	color:#b9b9b9;
-    font-size: 18rem;
-}
 .main-devtool-request-input-option-select{
     width: 50%;
     display: flex;
@@ -679,6 +619,153 @@ td{
 .main-devtool-request-input-content-table-addrow:hover{
     color: #19c58c;
 }
+.main-devtool-request-input-content-table-empty{
+    width: 100%;
+    text-align: center;
+    font-size: 18rem;
+    color: #aaa
+}
+.main-devtool-request-input-content-table-empty a{
+    color: #0089e2;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0 6rem;
+}
+.main-devtool-request-input-content-table-empty a:hover{
+    color: #19c58c;
+}
+.main-devtool-request-input-content-table-url{
+	width: 62%;
+	display: flex;
+	position: relative;
+	box-sizing: border-box;
+    overflow: hidden;
+    flex-shrink: 0
+}
+.main-devtool-request-input-content-table-url-method{
+	flex-shrink: 0;
+	align-self: stretch;
+    background-color: #fff;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    border: solid #c4c7ce;
+    justify-content: flex-end;
+    border-width: 2px 0 2px 2px;
+    border-radius: 6rem 0 0 6rem;
+    padding: 0 2.5%;
+}
+.main-devtool-request-input-content-table-url-method select{
+    height: 60%;
+    text-align: center;
+    text-align-last: center;
+    font-size: 16rem;
+    border-radius: 3px;
+    font-weight: bold;
+    color: #333;
+    background-color: #e9e9ea;
+    border: none;
+}
+.main-devtool-request-input-content-table-url-method select option{
+	text-align:center;
+}
+.main-devtool-request-input-content-table-url-input{
+	width: 100%;
+	font-size: 24rem;
+	line-height: 1;
+    border: solid #c4c7ce;
+    border-width: 2px 2px 2px 0;
+    border-radius: 0 6rem 6rem 0;
+    overflow: hidden
+}
+.main-devtool-request-input-content-table-url-input input{
+	width: 100%;
+	border: none;
+	font-size: 24rem;
+	line-height: 1;
+	padding: 1.3% 2.5%;
+    padding-left: 0;
+	box-sizing: border-box;
+	background: #fff;
+	color:#333;
+	text-align: left;
+    font-family: Consolas, "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", Monaco, "Courier New", "monospace", "Microsoft YaHei", 微软雅黑, 等线, 黑体;
+}
+.main-devtool-request-input-content-table-url-input input::-webkit-input-placeholder{
+	color:#b9b9b9;
+    font-size: 18rem;
+}
+.main-devtool-request-input-content-table-title{
+	width: 100%;
+    font-size: 16rem;
+    color: #aaa;
+    margin-top: 3%;
+}
+.main-devtool-request-input-content-table-history{
+    margin-top: 2%;
+	width: 100%;
+    overflow-y: auto;
+}
+.main-devtool-request-input-content-table-history-list{
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+}
+.main-devtool-request-input-content-table-history-list-item{
+    max-width: 100%;
+    margin-right: 2%;
+    border-radius: 3px;
+    background-color: #ddd;
+    padding: 6rem 10rem;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-bottom: 1%;
+    box-sizing: border-box;
+}
+.main-devtool-request-input-content-table-history-list-item:hover{
+    background-color: #19c58c;
+    color: #fff
+}
+.main-devtool-request-input-content-table-history-list-item-method{
+    display: inline-block;
+    font-size: 12rem;
+    font-weight: bold;
+    border: solid #aaa 2px;
+    line-height: 1;
+    padding: 2rem 3rem;
+    border-radius: 3px;
+    margin-right: 3rem
+}
+.main-devtool-request-input-content-table-history-list-item:hover .main-devtool-request-input-content-table-history-list-item-method{
+    border-color: #fff;
+    background-color: #fff;
+    color: #19c58c
+}
+.main-devtool-request-input-content-table-history-list-item-url{
+    display: inline;
+    word-break: break-all;
+    word-wrap: break-word;
+    font-size: 14rem;
+}
+.main-devtool-request-input-content-table-history-list-clean{
+    margin-right: 2%;
+    border-radius: 3px;
+    background-color: #aaa;
+    padding: 6rem 10rem;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-bottom: 1%;
+    box-sizing: border-box;
+    color: #fff;
+    font-size: 14rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center
+}
+.main-devtool-request-input-content-table-history-list-clean:hover{
+    background-color: #0089e2;
+}
 .main-devtool-response{
     width: 90%;
     flex-grow: 1;
@@ -873,35 +960,6 @@ td{
 		width: 15.8em;
 		height: 5em;
 	}
-	.main-logo-version{
-		font-size: 16.5rem;
-	}
-	.main-go{
-		width: 96%;
-	}
-	.main-go-input-box{
-		width: 90%;
-		position: relative;
-		padding: 0 3.5%;
-		padding-right: 1.5%;
-	}
-	.main-go-input{
-		width: 90%;
-		font-size: 18rem;
-		padding: 1.5% 0%;
-	}
-	.main-go-input::-webkit-input-placeholder{
-		font-size: 14rem;
-	}
-	.main-go-input::-moz-placeholder{
-		font-size: 14rem;
-	}
-	.main-go-input:-moz-placeholder{
-		font-size: 14rem;
-	}
-	.main-go-btn{
-		width: 10%;
-	}
 	.main-nav{
 		width: 96%
 	}
@@ -935,6 +993,9 @@ td{
 		margin-bottom: 3%;
 	}
 	.main-document iframe{
-		min-height: 600px;
+		min-height: auto;
 	}
+    .main-devtool-response{
+        margin-top: 1.5%
+    }
 }

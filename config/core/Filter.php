@@ -1,5 +1,5 @@
 <?php
-$_SERVER['APIPHP']['Config']['Filter']=[
+$_SERVER['APIPHP']['Config']['core\Filter']=[
 	'rule'=>[
 		'digit'=>'/^\d+$|^\d+[.]?\d+$/',//数值
 		'int_digit'=>'/^\d+$/',//正整数

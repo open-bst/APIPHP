@@ -201,7 +201,7 @@ class Img
                 $WordMarginX,
                 $WordMarginY,
                 $TextColor,
-                Common::diskPath($_SERVER['APIPHP']['Config']['Img']['fontFile']),
+                Common::diskPath($_SERVER['APIPHP']['Config']['core\Img']['fontFile']),
                 $Word
             )) {
                 Api::wrong(['level' => 'F', 'detail' => 'Error#M.2.5', 'code' => 'M.2.5']);

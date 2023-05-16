@@ -18,7 +18,7 @@ class Api
         $Log = Common::quickParameter($UnionData, 'log', '日志', false, false);
         $HttpCode = Common::quickParameter($UnionData, 'http', '响应码', false, 200);
 
-        $Style = $_SERVER['APIPHP']['Config']['Api']['template'];
+        $Style = $_SERVER['APIPHP']['Config']['core\Api']['template'];
 
         foreach ($Content as $Key => $Val) {
             $Style[$Key] = $Val;
@@ -46,7 +46,7 @@ class Api
         $HttpCode = Common::quickParameter($UnionData, 'http', '响应码', false, 200);
         $Level = strtoupper(Common::quickParameter($UnionData, 'level', '级别'));
 
-        $Config = $_SERVER['APIPHP']['Config']['Api'];
+        $Config = $_SERVER['APIPHP']['Config']['core\Api'];
 
         foreach ($Config['wrong']['ignore'] as $Val) {
             if (strstr($Detail, $Val)) {
@@ -97,7 +97,7 @@ class Api
         }
 
 
-        if (__DEBUG__ || stristr($Config['wrong']['respond'], $Level) !== false) {
+        if (_DEBUG || stristr($Config['wrong']['respond'], $Level) !== false) {
             foreach ($Config['wrong']['style'] as $Key => $Val) {
                 $Config['wrong']['style'][$Key] = str_replace(['{code}', '{info}', '{time}'],
                     [$Code, $WrongInfo['detail'], $WrongInfo['time']],

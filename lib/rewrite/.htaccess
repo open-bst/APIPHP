@@ -1,3 +1,4 @@
+DirectoryIndex index.html
 <IfModule mod_rewrite.c>
 Options +FollowSymLinks +SymLinksIfOwnerMatch
 RewriteEngine On
@@ -6,16 +7,8 @@ RewriteBase /
 RewriteCond %{REQUEST_URI} !^/index.php$ [NC]
 RewriteRule ^(.*?)(\.php)+$ $1 [NC,DPI]
 
-RewriteRule ^(?!(web/|index\.php))(.*?)$ web/$2 [NC,DPI]
-
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^(.*?)([^/])$ $1$2/ [QSA,NC,DPI,L]
-
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(web/)*(.*?)/$ index.php?p_a_t_h=/$2 [QSA,NC,DPI,L]
-
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^(web/)*(.*?)(/)*$ index.php?p_a_t_h=/$2 [QSA,NC,DPI]
+RewriteCond %{REQUEST_URI} !^/asset/(.*)$
+RewriteRule ^(/)*(.*?)(/)*$ index.php?p_a_t_h=/$2 [QSA,NC,DPI,L]
 </IfModule>
 
 <FilesMatch "\.*$">

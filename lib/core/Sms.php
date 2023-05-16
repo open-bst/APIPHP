@@ -35,7 +35,7 @@ class Sms
             $PhoneNumber = $PhoneNumber . $Val . ',';
         }
         $GetArray = [
-            'AccessKeyId' => $_SERVER['APIPHP']['Config']['Sms']['aliyunAccessKeyID'],
+            'AccessKeyId' => $_SERVER['APIPHP']['Config']['core\Sms']['aliyunAccessKeyID'],
             'Timestamp' => $TempTimestamp,
             'SignatureMethod' => 'HMAC-SHA1',
             'SignatureVersion' => '1.0',
@@ -44,9 +44,9 @@ class Sms
 
             'Action' => 'SendSms',
             'Version' => '2017-05-25',
-            'RegionId' => $_SERVER['APIPHP']['Config']['Sms']['aliyunRegionId'],
+            'RegionId' => $_SERVER['APIPHP']['Config']['core\Sms']['aliyunRegionId'],
             'PhoneNumbers' => $PhoneNumber,
-            'SignName' => $_SERVER['APIPHP']['Config']['Sms']['aliyunSignName'],
+            'SignName' => $_SERVER['APIPHP']['Config']['core\Sms']['aliyunSignName'],
             'TemplateCode' => $Template
         ];
         if (!empty($Param)) {
@@ -64,7 +64,7 @@ class Sms
             hash_hmac(
                 'sha1',
                 'GET&%2F&' . self::aliyunEncode($SortString),
-                $_SERVER['APIPHP']['Config']['Sms']['aliyunAccessKeySecret'] . "&",
+                $_SERVER['APIPHP']['Config']['core\Sms']['aliyunAccessKeySecret'] . "&",
                 true
             )
         );

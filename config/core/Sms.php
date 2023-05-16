@@ -1,5 +1,5 @@
 <?php
-$_SERVER['APIPHP']['Config']['Sms']=[
+$_SERVER['APIPHP']['Config']['core\Sms']=[
 	'timeout'=>15,
 
 	'aliyunAccessKeyID'=>'',

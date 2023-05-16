@@ -26,7 +26,7 @@ class Db
     {
         $DbName = Common::quickParameter($UnionData, 'db_name', '数据库');
         if (!empty($DbName)) {
-            $_SERVER['APIPHP']['Config']['Db']['default'] = $DbName;
+            $_SERVER['APIPHP']['Config']['core\Db']['default'] = $DbName;
         }
     }
 
@@ -34,7 +34,7 @@ class Db
     private static function connect($DbName)
     {
         if (empty($DbName)) {
-            $DbName = $_SERVER['APIPHP']['Config']['Db']['default'];
+            $DbName = $_SERVER['APIPHP']['Config']['core\Db']['default'];
         }
         if (self::$NowDb != $DbName) {
             self::$DbHandle = null;
@@ -44,27 +44,27 @@ class Db
         if (empty(self::$DbHandle)) {
             self::$Stmts = [];
 
-            if (empty($_SERVER['APIPHP']['Config']['Db']['dbInfo'][self::$NowDb])) {
+            if (empty($_SERVER['APIPHP']['Config']['core\Db']['dbInfo'][self::$NowDb])) {
                 Api::wrong(['level' => 'F', 'detail' => 'Error#M.8.0', 'code' => 'M.8.0']);
             }
-            $Dsn = $_SERVER['APIPHP']['Config']['Db']['dbInfo'][self::$NowDb]['type'] .
-                ':host=' . $_SERVER['APIPHP']['Config']['Db']['dbInfo'][self::$NowDb]['address'] .
-                ';port=' . $_SERVER['APIPHP']['Config']['Db']['dbInfo'][self::$NowDb]['port'] .
-                ';dbname=' . $_SERVER['APIPHP']['Config']['Db']['dbInfo'][self::$NowDb]['dbname'] .
-                ';charset=' . $_SERVER['APIPHP']['Config']['Db']['dbInfo'][self::$NowDb]['charset'];
+            $Dsn = $_SERVER['APIPHP']['Config']['core\Db']['dbInfo'][self::$NowDb]['type'] .
+                ':host=' . $_SERVER['APIPHP']['Config']['core\Db']['dbInfo'][self::$NowDb]['address'] .
+                ';port=' . $_SERVER['APIPHP']['Config']['core\Db']['dbInfo'][self::$NowDb]['port'] .
+                ';dbname=' . $_SERVER['APIPHP']['Config']['core\Db']['dbInfo'][self::$NowDb]['dbname'] .
+                ';charset=' . $_SERVER['APIPHP']['Config']['core\Db']['dbInfo'][self::$NowDb]['charset'];
             try {
                 self::$DbHandle = @new PDO(
                     $Dsn,
-                    $_SERVER['APIPHP']['Config']['Db']['dbInfo'][self::$NowDb]['username'],
-                    $_SERVER['APIPHP']['Config']['Db']['dbInfo'][self::$NowDb]['password']
+                    $_SERVER['APIPHP']['Config']['core\Db']['dbInfo'][self::$NowDb]['username'],
+                    $_SERVER['APIPHP']['Config']['core\Db']['dbInfo'][self::$NowDb]['password']
                 );
                 self::$DbHandle->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            } catch (PDOException $Error) {
+            } catch (PDOException $Err) {
                 Api::wrong(
                     [
                         'level' => 'F',
-                        'detail' => 'Error#M.8.1' . "\r\n\r\n @ " . 'ErrorInfo: (' . $Error->getCode(
-                            ) . ') ' . $Error->getMessage(),
+                        'detail' => 'Error#M.8.1' . "\r\n\r\n @ " . 'ErrorInfo: (' . $Err->getCode(
+                            ) . ') ' . $Err->getMessage(),
                         'code' => 'M.8.1'
                     ]
                 );
@@ -139,9 +139,9 @@ class Db
 
         try {
             self::$Stmts[$StmtKey]->execute();
-        } catch (PDOException $Error) {
-            $ModuleError = 'Detail: ' . $Error->getMessage(
-                ) . ' | SQL String: ' . $PreSql . ' | errno:' . $Error->getCode();
+        } catch (PDOException $Err) {
+            $ModuleError = 'Detail: ' . $Err->getMessage(
+                ) . ' | SQL String: ' . $PreSql . ' | errno:' . $Err->getCode();
             Api::wrong(['level' => 'F', 'detail' => 'Error#M.8.2' . "\r\n\r\n @ " . $ModuleError, 'code' => 'M.8.2']);
         }
 
@@ -161,7 +161,7 @@ class Db
     //写入日志
     private static function sqlLog($Sql)
     {
-        if ($_SERVER['APIPHP']['Config']['Db']['log']) {
+        if ($_SERVER['APIPHP']['Config']['core\Db']['log']) {
             Log::add(['level' => 'debug', 'info' => '[SQL] ' . $Sql]);
         }
     }
@@ -485,11 +485,11 @@ class Db
             try {
                 self::$DbHandle->beginTransaction();
                 return true;
-            } catch (Exception $Error) {
+            } catch (Exception $Err) {
                 Api::wrong(
                     [
                         'level' => 'F',
-                        'detail' => 'Error#M.8.3' . "\r\n\r\n @ " . 'Detail: ' . $Error->getMessage(),
+                        'detail' => 'Error#M.8.3' . "\r\n\r\n @ " . 'Detail: ' . $Err->getMessage(),
                         'code' => 'M.8.3'
                     ]
                 );

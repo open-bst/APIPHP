@@ -24,8 +24,8 @@ class Ip
             return true;
         }
 
-        self::$BlackListFile = __ROOT__ . '/temp/ip-blacklist.php';
-        self::$WhiteListFile = __ROOT__ . '/temp/ip-whitelist.php';
+        self::$BlackListFile = _ROOT . '/temp/ip-blacklist.php';
+        self::$WhiteListFile = _ROOT . '/temp/ip-whitelist.php';
         if (!file_exists(self::$BlackListFile)) {
             if (!file_put_contents(self::$BlackListFile, '<?php exit; ?>')) {
                 Api::wrong(['level' => 'F', 'detail' => 'Error#M.3.0', 'code' => 'M.3.0']);
@@ -171,7 +171,7 @@ class Ip
         if (ip2long($EndIP) === false) {
             return false;
         }
-        if (!empty($ExpTime) && intval($ExpTime) < __TIME__) {
+        if (!empty($ExpTime) && intval($ExpTime) < _TIME) {
             return false;
         }
         $StartIPNumber = self::transform($StartIP);
@@ -228,7 +228,7 @@ class Ip
         }
 
         if (!self::find(['type' => 'w', 'ip' => $IP]) && self::find(['type' => 'b', 'ip' => $IP])) {
-            if ($_SERVER['APIPHP']['Config']['Ip']['exitProgram']) {
+            if ($_SERVER['APIPHP']['Config']['core\Ip']['exitProgram']) {
                 Api::wrong(['level' => 'F', 'detail' => 'Error#M.3.3', 'code' => 'M.3.3']);
             } else {
                 return false;
@@ -278,7 +278,7 @@ class Ip
             $ListArray = self::$WhiteList;
         }
         foreach ($ListArray as $Val) {
-            if (($IPNumber == $Val[0] || ($IPNumber > $Val[0] && $IPNumber < $Val[1])) && (__TIME__ <= $Val[2] || empty($Val[2]))) {
+            if (($IPNumber == $Val[0] || ($IPNumber > $Val[0] && $IPNumber < $Val[1])) && (_TIME <= $Val[2] || empty($Val[2]))) {
                 return true;
             }
         }
@@ -303,14 +303,14 @@ class Ip
         } else {
             if (strtolower($Type) == 'b' || empty($Type)) {
                 foreach (self::$BlackList as $Key => $Val) {
-                    if (!empty($Val[2]) && intval($Val[2]) < __TIME__) {
+                    if (!empty($Val[2]) && intval($Val[2]) < _TIME) {
                         unset(self::$BlackList[$Key]);
                     }
                 }
             }
             if (strtolower($Type) == 'w' || empty($Type)) {
                 foreach (self::$WhiteList as $Key => $Val) {
-                    if (!empty($Val[2]) && intval($Val[2]) < __TIME__) {
+                    if (!empty($Val[2]) && intval($Val[2]) < _TIME) {
                         unset(self::$WhiteList[$Key]);
                     }
                 }

@@ -32,7 +32,7 @@ class Vcode
         $Line = Common::quickParameter($UnionData, 'line', '线', false, 2);
         $NoiseHexColor = Common::quickParameter($UnionData, 'noise_color', '噪点颜色', false, '#ff6600');
 
-        $Font = Common::diskPath($_SERVER['APIPHP']['Config']['Vcode']['fontFile']);
+        $Font = Common::diskPath($_SERVER['APIPHP']['Config']['core\Vcode']['fontFile']);
 
         if (!file_exists($Font)) {
             Api::wrong(['level' => 'F', 'detail' => 'Error#M.10.0', 'code' => 'M.10.0']);
@@ -80,7 +80,7 @@ class Vcode
             header('Cache-Control: no-cache,must-revalidate');
             header('Pragma: no-cache');
             header("Expires: -1");
-            header('Last-Modified: ' . gmdate('D, d M Y 00:00:00', __TIME__) . ' GMT');
+            header('Last-Modified: ' . gmdate('D, d M Y 00:00:00', _TIME) . ' GMT');
             imagejpeg($NewImg);
             imagedestroy($NewImg);
         } else {

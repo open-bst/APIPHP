@@ -23,7 +23,7 @@ class Data
             return true;
         }
 
-        self::$Handle = strtolower($_SERVER['APIPHP']['Config']['Data']['handle']);
+        self::$Handle = strtolower($_SERVER['APIPHP']['Config']['core\Data']['handle']);
 
         if (self::$Handle == 'redis') {
             self::redisConnect();
@@ -107,12 +107,12 @@ class Data
     private static function getFilePath($Prefix, $Key, $Mkdir = false)
     {
         $MD5 = md5($Key);
-        $Path = __ROOT__ . '/temp/data/' . $Prefix;
-        $Level = intval($_SERVER['APIPHP']['Config']['Data']['connect']['file']['level']);
-        if ($_SERVER['APIPHP']['Config']['Data']['connect']['file']['level'] < 1) {
+        $Path = _ROOT . '/temp/data/' . $Prefix;
+        $Level = intval($_SERVER['APIPHP']['Config']['core\Data']['connect']['file']['level']);
+        if ($_SERVER['APIPHP']['Config']['core\Data']['connect']['file']['level'] < 1) {
             $Level = 0;
         }
-        if ($_SERVER['APIPHP']['Config']['Data']['connect']['file']['level'] > 15) {
+        if ($_SERVER['APIPHP']['Config']['core\Data']['connect']['file']['level'] > 15) {
             $Level = 15;
         }
         for ($i = 0; $i < $Level; $i++) {
@@ -139,7 +139,7 @@ class Data
         if ($Time < 1) {
             return self::deleteByFile($Key, $Prefix);
         }
-        $Cache = intval(__TIME__) + $Time . "\r\n" . self::varToStr($Value);
+        $Cache = intval(_TIME) + $Time . "\r\n" . self::varToStr($Value);
         $FileHandle = fopen(self::getFilePath($Prefix, $Key, true), 'w');
         if (!$FileHandle) {
             Api::wrong(['level' => 'F', 'detail' => 'Error#M.12.0', 'code' => 'M.12.0']);
@@ -175,8 +175,8 @@ class Data
             Api::wrong(['level' => 'F', 'detail' => 'Error#M.12.4', 'code' => 'M.12.4']);
         }
         $ExpTime = intval(strtok($Cache, "\r\n"));
-        if ($ExpTime <= 0 || $ExpTime < intval(__TIME__)) {
-            if (mt_rand(1, $_SERVER['APIPHP']['Config']['Data']['connect']['file']['clean']) == 1) {
+        if ($ExpTime <= 0 || $ExpTime < intval(_TIME)) {
+            if (mt_rand(1, $_SERVER['APIPHP']['Config']['core\Data']['connect']['file']['clean']) == 1) {
                 self::deleteByFile($Key, $Prefix, $FilePath);
             }
             return null;
@@ -190,19 +190,19 @@ class Data
         self::$Connect = new Redis();
         try {
             self::$Connect->connect(
-                $_SERVER['APIPHP']['Config']['Data']['connect']['redis']['address'],
-                $_SERVER['APIPHP']['Config']['Data']['connect']['redis']['port'],
-                $_SERVER['APIPHP']['Config']['Data']['connect']['redis']['timeout']
+                $_SERVER['APIPHP']['Config']['core\Data']['connect']['redis']['address'],
+                $_SERVER['APIPHP']['Config']['core\Data']['connect']['redis']['port'],
+                $_SERVER['APIPHP']['Config']['core\Data']['connect']['redis']['timeout']
             );
         } catch (Throwable $t) {
             Api::wrong(['level' => 'F', 'detail' => 'Error#M.12.1', 'code' => 'M.12.1']);
         }
-        if ($_SERVER['APIPHP']['Config']['Data']['connect']['redis']['password'] != '') {
-            self::$Connect->auth($_SERVER['APIPHP']['Config']['Data']['connect']['redis']['password']) ?: Api::wrong(
+        if ($_SERVER['APIPHP']['Config']['core\Data']['connect']['redis']['password'] != '') {
+            self::$Connect->auth($_SERVER['APIPHP']['Config']['core\Data']['connect']['redis']['password']) ?: Api::wrong(
                 ['level' => 'F', 'detail' => 'Error#M.12.2', 'code' => 'M.12.2']
             );
         }
-        self::$Connect->select($_SERVER['APIPHP']['Config']['Data']['connect']['redis']['dbnumber']) ?: Api::wrong(
+        self::$Connect->select($_SERVER['APIPHP']['Config']['core\Data']['connect']['redis']['dbnumber']) ?: Api::wrong(
             ['level' => 'F', 'detail' => 'Error#M.12.3', 'code' => 'M.12.3']
         );
     }

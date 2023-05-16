@@ -23,14 +23,14 @@ class Ftp
         $From = Common::diskPath($From);
 
         $Connect = ftp_connect(
-            $_SERVER['APIPHP']['Config']['Ftp']['server'],
-            $_SERVER['APIPHP']['Config']['Ftp']['port'],
+            $_SERVER['APIPHP']['Config']['core\Ftp']['server'],
+            $_SERVER['APIPHP']['Config']['core\Ftp']['port'],
             $Timeout
         );
         $Login = ftp_login(
             $Connect,
-            $_SERVER['APIPHP']['Config']['Ftp']['user'],
-            $_SERVER['APIPHP']['Config']['Ftp']['password']
+            $_SERVER['APIPHP']['Config']['core\Ftp']['user'],
+            $_SERVER['APIPHP']['Config']['core\Ftp']['password']
         );
         if ((!$Connect) || (!$Login)) {
             Api::wrong(['level' => 'F', 'detail' => 'Error#M.1.0', 'code' => 'M.1.0']);
@@ -48,20 +48,20 @@ class Ftp
     public static function down($UnionData = []): bool
     {
         $From = Common::quickParameter($UnionData, 'from', '远程路径');
-        $To = __ROOT__ . Common::quickParameter($UnionData, 'to', '本地路径');
+        $To = _ROOT . Common::quickParameter($UnionData, 'to', '本地路径');
         $Timeout = Common::quickParameter($UnionData, 'timeout', '超时时间', false, 90);
 
         $To = Common::diskPath($To);
 
         $Connect = ftp_connect(
-            $_SERVER['APIPHP']['Config']['Ftp']['server'],
-            $_SERVER['APIPHP']['Config']['Ftp']['port'],
+            $_SERVER['APIPHP']['Config']['core\Ftp']['server'],
+            $_SERVER['APIPHP']['Config']['core\Ftp']['port'],
             $Timeout
         );
         $Login = ftp_login(
             $Connect,
-            $_SERVER['APIPHP']['Config']['Ftp']['user'],
-            $_SERVER['APIPHP']['Config']['Ftp']['password']
+            $_SERVER['APIPHP']['Config']['core\Ftp']['user'],
+            $_SERVER['APIPHP']['Config']['core\Ftp']['password']
         );
         if ((!$Connect) || (!$Login)) {
             Api::wrong(['level' => 'F', 'detail' => 'Error#M.1.0', 'code' => 'M.1.0']);

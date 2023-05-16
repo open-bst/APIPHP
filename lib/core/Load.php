@@ -85,7 +85,7 @@ class Load
                 return null;
             }
         }
-        return str_replace(__ROOT__, '', $PathInfo . '/' . $FileName);
+        return str_replace(_ROOT, '', $PathInfo . '/' . $FileName);
     }
 
     //上传
@@ -219,7 +219,7 @@ class Load
         if (!empty($FileName)) {
             $NewName = $Path . $FileName;
         } else {
-            $NewName = $Path . intval(__TIME__) . mt_rand(111, 999) . '-' . basename($Url);
+            $NewName = $Path . intval(_TIME) . mt_rand(111, 999) . '-' . basename($Url);
         }
 
         $Handle = curl_init();

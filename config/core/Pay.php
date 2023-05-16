@@ -1,5 +1,5 @@
 <?php
-$_SERVER['APIPHP']['Config']['Pay']=[
+$_SERVER['APIPHP']['Config']['core\Pay']=[
 	'timeout'=>15,
 	
 	'aliPid'=>'',

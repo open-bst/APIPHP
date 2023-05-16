@@ -1,7 +1,7 @@
 <?php
 use core\Api;
 
-$Version=__VERSION__;
+$Version=_VERSION;
 Api::respond([
     'content'=>[
         'data'=>['version'=>$Version]

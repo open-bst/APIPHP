@@ -1,6 +1,6 @@
 <?php
 
-$_SERVER['APIPHP']['Config']['Db']=[
+$_SERVER['APIPHP']['Config']['core\Db']=[
 	'log'=>FALSE,
 
 	'dbInfo'=>[

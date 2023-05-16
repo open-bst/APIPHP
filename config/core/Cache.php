@@ -1,4 +1,4 @@
 <?php
-$_SERVER['APIPHP']['Config']['Cache']=[
+$_SERVER['APIPHP']['Config']['core\Cache']=[
 	'expTime'=>300
 ];

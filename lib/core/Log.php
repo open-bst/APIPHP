@@ -47,7 +47,7 @@ class Log
             'LevelName' => $LevelName,
             'Level' => $Level,
             'Content' => $Info,
-            'Time' => (intval(microtime(true) * 1000) - intval(__TIME__ * 1000)) / 1000
+            'Time' => (intval(microtime(true) * 1000) - intval(_TIME * 1000)) / 1000
         ];
         return true;
     }
@@ -55,17 +55,18 @@ class Log
     //写入文件
     public static function output(): bool
     {
-        if (strlen($_SERVER['APIPHP']['Config']['Base']['safeCode']) < 10) {
+        if (strlen(\core\Initial::getConfig('safeCode')) < 10) {
             return false;
         }
 
-        if (strtoupper($_SERVER['APIPHP']['Config']['Log']['interval']) == 'H') {
-            $LogFileName = date('H\H', __TIME__);
-        } elseif (strtoupper($_SERVER['APIPHP']['Config']['Log']['interval']) == 'M') {
-            $LogFileName = date('H\H_i', __TIME__);
-        } elseif (strtoupper($_SERVER['APIPHP']['Config']['Log']['interval']) == 'HM') {
-            $LogFileName = date('H\H_i', __TIME__);
-            if (__TIME__ % 60 < 30) {
+
+        if (strtoupper($_SERVER['APIPHP']['Config']['core\Log']['interval']) == 'H') {
+            $LogFileName = date('H\H', _TIME);
+        } elseif (strtoupper($_SERVER['APIPHP']['Config']['core\Log']['interval']) == 'M') {
+            $LogFileName = date('H\H_i', _TIME);
+        } elseif (strtoupper($_SERVER['APIPHP']['Config']['core\Log']['interval']) == 'HM') {
+            $LogFileName = date('H\H_i', _TIME);
+            if (_TIME % 60 < 30) {
                 $LogFileName .= '_(1)';
             } else {
                 $LogFileName .= '_(2)';
@@ -76,27 +77,27 @@ class Log
 
         $AccessInfo = '';
 
-        if ($_SERVER['APIPHP']['Config']['Log']['access']) {
+        if ($_SERVER['APIPHP']['Config']['core\Log']['access']) {
             $AccessInfo =
                 '[access] IP:' . $_SERVER['REMOTE_ADDR'] .
-                ' | DOMAIN:' . $_SERVER['SERVER_NAME'] .
+                ' | HOST:' . isset($_SERVER['HTTP_X_FORWARDED_HOST']) ? $_SERVER['HTTP_X_FORWARDED_HOST'] : ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] . ($_SERVER['SERVER_PORT'] == '80' || $_SERVER['SERVER_PORT'] == '443' ? '' : ':' . $_SERVER['SERVER_PORT'])) .
                 ' | METHOD:' . $_SERVER['REQUEST_METHOD'] .
                 ' | REFERER:' . ((empty($_SERVER['HTTP_REFERER'])) ? '' : $_SERVER['HTTP_REFERER']) .
                 ' | UA:' . ((empty($_SERVER['HTTP_USER_AGENT'])) ? '' : $_SERVER['HTTP_USER_AGENT']) .
                 "\r\n";
         }
 
-        $FilePath = '/temp/log/' . $_SERVER['APIPHP']['Config']['Base']['safeCode'] . date('/Y-m/d', __TIME__);
-        if (!file_exists(__ROOT__ . $FilePath)) {
-            mkdir(__ROOT__ . $FilePath, 0777, true);
+        $FilePath = '/temp/log/' . $_SERVER['APIPHP']['Config']['core\Base']['safeCode'] . date('/Y-m/d', _TIME);
+        if (!file_exists(_ROOT . $FilePath)) {
+            mkdir(_ROOT . $FilePath, 0777, true);
         }
 
         $Content = '### ' . date(
                 'Y-m-d H:i:s',
-                __TIME__
-            ) . ' (' . __TIME__ . ")\r\n[path] " . __URI__ . "\r\n" . $AccessInfo;
+                _TIME
+            ) . ' (' . _TIME . ")\r\n[path] " . _URI . "\r\n" . $AccessInfo;
 
-        $ConfigLevel = self::getLevel($_SERVER['APIPHP']['Config']['Log']['level']);
+        $ConfigLevel = self::getLevel($_SERVER['APIPHP']['Config']['core\Log']['level']);
 
         if ($ConfigLevel === false) {
             return false;
@@ -111,7 +112,7 @@ class Log
         $Content .= "\r\n";
 
         $_SERVER['APIPHP']['Log'] = [];
-        $Handle = fopen(__ROOT__ . $FilePath . '/' . $LogFileName . '.txt', 'a');
+        $Handle = fopen(_ROOT . $FilePath . '/' . $LogFileName . '.txt', 'a');
         if ($Handle) {
             if (flock($Handle, LOCK_EX)) {
                 fwrite($Handle, $Content);

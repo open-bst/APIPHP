@@ -16,7 +16,7 @@ class Setting
     //检查配置文件
     private static function fileCheck($Module): bool
     {
-        $FilePath = __ROOT__ . '/config/core/' . ucfirst($Module) . '.php';
+        $FilePath = _ROOT . '/config/core/' . ucfirst($Module) . '.php';
         if (file_exists($FilePath)) {
             return true;
         }
@@ -83,7 +83,7 @@ class Setting
         $Name = Common::quickParameter($UnionData, 'name', '名称');
 
         self::fileCheck($Module);
-        require_once(__ROOT__ . '/config/core/' . ucfirst($Module) . '.php');
+        require_once(_ROOT . '/config/core/' . ucfirst($Module) . '.php');
         if (!isset($_SERVER['APIPHP']['Config'][$Module][$Name])) {
             Api::wrong(['level' => 'F', 'detail' => 'Error#M.9.2', 'code' => 'M.9.2']);
         }
@@ -93,14 +93,15 @@ class Setting
     //写入配置项
     public static function set($UnionData = [])
     {
-        $Module = Common::quickParameter($UnionData, 'module', '模块');
+        $Namespace = Common::quickParameter($UnionData, 'namespace', '命名空间');
+        $Module = Common::quickParameter($UnionData, 'path', '模块');
         $Name = Common::quickParameter($UnionData, 'name', '名称');
         $Value = Common::quickParameter($UnionData, 'value', '值');
         $Module = ucfirst($Module);
 
         $CodeText = self::fileCheck($Module);
         $OldValue = self::get(['module' => $Module, 'name' => $Name]);
-        require_once(__ROOT__ . '/config/core/' . $Module . '.php');
+        require_once(_ROOT . '/config/core/' . $Module . '.php');
         if (gettype($OldValue) != gettype($Value)) {
             Api::wrong(['level' => 'F', 'detail' => 'Error#M.9.3', 'code' => 'M.9.3']);
         }
@@ -114,7 +115,7 @@ class Setting
             }
         }
         $CodeText .= "\r\n];";
-        $Handle = @fopen(__ROOT__ . '/config/core/' . $Module . '.php', 'w');
+        $Handle = @fopen(_ROOT . '/config/core/' . $Module . '.php', 'w');
         if (!$Handle) {
             Api::wrong(['level' => 'F', 'detail' => 'Error#M.9.4', 'code' => 'M.9.4']);
         }

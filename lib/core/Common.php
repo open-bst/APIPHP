@@ -30,11 +30,11 @@ class Common
         }
         if ($Must) {
             $Stack = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
-            $ErrorMsg = '';
+            $ErrMsg = '';
             if (isset($Stack[1]['class'])) {
-                $ErrorMsg = "\r\n\r\n @ " . $Stack[1]['class'] . $Stack[1]['type'] . $Stack[1]['function'] . '() @ ' . $Name . '（' . $Dialect . '）';
+                $ErrMsg = "\r\n\r\n @ " . $Stack[1]['class'] . $Stack[1]['type'] . $Stack[1]['function'] . '() @ ' . $Name . '（' . $Dialect . '）';
             }
-            Api::wrong(['level' => 'F', 'detail' => 'Error#C.0.3' . $ErrorMsg, 'code' => 'C.0.3']);
+            Api::wrong(['level' => 'F', 'detail' => 'Error#C.0.3' . $ErrMsg, 'code' => 'C.0.3']);
         }
         return $Default;
     }
@@ -49,11 +49,11 @@ class Common
         if (substr($Path, -1, 1) == '/') {
             $Path = substr($Path, 0, -1);
         }
-        if (substr($Path, 0, strlen(__ROOT__)) != __ROOT__) {
+        if (substr($Path, 0, strlen(_ROOT)) != _ROOT) {
             if (!empty($Prefix)) {
-                $Path = __ROOT__ . $Prefix . '/' . $Path;
+                $Path = _ROOT . $Prefix . '/' . $Path;
             } else {
-                $Path = __ROOT__ . '/' . $Path;
+                $Path = _ROOT . '/' . $Path;
             }
         }
 

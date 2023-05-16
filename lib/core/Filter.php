@@ -50,8 +50,8 @@ class Filter
             return filter_var($Value, FILTER_VALIDATE_IP);
         }
         $RuleName = $OpArray[3];
-        if (!empty($_SERVER['APIPHP']['Config']['Filter']['rule'][$RuleName])) {
-            if (preg_match($_SERVER['APIPHP']['Config']['Filter']['rule'][$RuleName], $Value) == 0) {
+        if (!empty($_SERVER['APIPHP']['Config']['core\Filter']['rule'][$RuleName])) {
+            if (preg_match($_SERVER['APIPHP']['Config']['core\Filter']['rule'][$RuleName], $Value) == 0) {
                 return false;
             }
         }

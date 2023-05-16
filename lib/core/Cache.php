@@ -71,20 +71,20 @@ class Cache
         $Path = Common::quickParameter($UnionData, 'path', '路径');
         $Force = Common::quickParameter($UnionData, 'force', '强制编译', false, false);
 
-        if (__DEBUG__) {
+        if (_DEBUG) {
             $Force = true;
         }
 
         $CacheChanged = false;
-        $CacheDir = __ROOT__ . '/temp/cache';
+        $CacheDir = _ROOT . '/temp/cache';
 
         $CacheFile = self::fileInfo($CacheDir . $Path . '.php');
 
-        if (!__DEBUG__ && !$Force && $CacheFile['exist'] && $CacheFile['time'] + $_SERVER['APIPHP']['Config']['Cache']['expTime'] > __TIME__) {
+        if (!_DEBUG && !$Force && $CacheFile['exist'] && $CacheFile['time'] + $_SERVER['APIPHP']['Config']['core\Cache']['expTime'] > _TIME) {
             return false;
         }
 
-        $SourcePath = self::fileInfo(__ROOT__ . '/source' . $Path . '.php');
+        $SourcePath = self::fileInfo(_ROOT . '/source' . $Path . '.php');
 
         if (!is_dir($CacheDir) && !@mkdir($CacheDir, 0777, true)) {
             Api::wrong(['level' => 'F', 'detail' => 'Error#M.11.5' . "\r\n\r\n @ " . $CacheDir, 'code' => 'M.11.5']);
@@ -113,19 +113,19 @@ class Cache
             return false;
         }
 
-        if (!$CacheFile['exist'] || $CacheFile['time'] > __TIME__) {
+        if (!$CacheFile['exist'] || $CacheFile['time'] > _TIME) {
             $CacheChanged = true;
         }
 
         if ($CacheFile['exist']) {
-            if ($SourcePath['time'] > $CacheFile['time'] || $SourcePath['time'] > __TIME__ || $Force) {
-                if ($SourcePath['time'] > __TIME__) {
+            if ($SourcePath['time'] > $CacheFile['time'] || $SourcePath['time'] > _TIME || $Force) {
+                if ($SourcePath['time'] > _TIME) {
                     touch($SourcePath['path']);
                 }
                 $CacheChanged = true;
             }
         }
-        if (!__DEBUG__ && !$Force && $CacheFile['exist'] && $CacheFile['time'] + $_SERVER['APIPHP']['Config']['Cache']['expTime'] <= __TIME__ && !$CacheChanged) {
+        if (!_DEBUG && !$Force && $CacheFile['exist'] && $CacheFile['time'] + $_SERVER['APIPHP']['Config']['core\Cache']['expTime'] <= _TIME && !$CacheChanged) {
             touch($CacheFile['path']);
             return false;
         }
@@ -149,7 +149,7 @@ class Cache
     //重建所有缓存
     public static function reBuild($Path = '')
     {
-        $SourceDir = __ROOT__ . '/source';
+        $SourceDir = _ROOT . '/source';
         $DirHandle = @opendir($SourceDir . $Path);
         while ($SourceFile = readdir($DirHandle)) {
             if ($SourceFile != '.' && $SourceFile != '..') {

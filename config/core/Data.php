@@ -1,5 +1,5 @@
 <?php
-$_SERVER['APIPHP']['Config']['Data']=[
+$_SERVER['APIPHP']['Config']['core\Data']=[
 	'handle'=>'redis',
 	'connect'=>[
 		'file'=>[

@@ -10,7 +10,7 @@
 <meta name="browsermode" content="application">
 <meta name="x5-orientation" content="portrait">
 <title>欢迎 -APIPHP</title>
-<script type="text/javascript" src="/js/clipboard.min.js"></script>
+<script type="text/javascript" src="/asset/js/clipboard.min.js"></script>
 <script type="text/javascript" src="/js/bluebird.min.js"></script>
 <script type="text/javascript" src="/js/axios.min.js"></script>
 <script type="text/javascript" src="/js/md5.js"></script>
@@ -30,7 +30,7 @@
     <div class="app" id="app">
         <div class="note note-slide" v-if="version.remote.status=='success'&&version.remote.value==version.native.value">恭喜！您当前使用的框架（V{{version.remote.value}}）是最新版本。</div>
         <div class="note note-slide note-error" v-if="version.remote.status=='success'&&version.remote.value!=version.native.value">你Out啦！APIPHP框架已发布新版本，还不快去看看！<a href="https://www.apiphp.com" target="_blank"><span class="note-link">立即下载</span></a></div>
-        <div class="note note-slide note-error" v-if="version.remote.status=='error'">框架最新版本号获取失败</div>
+        <div class="note note-slide note-error" v-if="version.remote.status=='error'">获取框架最新版本号失败</div>
         <div class="main">
             <div class="main-logo">
                 <img src="/img/logo.svg"/>

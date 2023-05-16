@@ -1,5 +1,5 @@
 <?php
-$_SERVER['APIPHP']['Config']['Api']=[
+$_SERVER['APIPHP']['Config']['core\Api']=[
 	'template'=>[
 		'code'=>1,
 		'status'=>'success',

@@ -9,11 +9,9 @@
 
 //框架配置项
 
-$_SERVER['APIPHP']['Config']['Base']=[
+$_SERVER['APIPHP']['Config']['core\Initial']=[
 	//调试模式
 	'debug'=>TRUE,
-	//强制HTTPS,
-	'https'=>FALSE,
 	//超时时限（秒）
 	'timeLimit'=>FALSE,
 	//安全码

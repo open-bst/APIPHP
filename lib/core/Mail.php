@@ -31,8 +31,8 @@ class Mail
 
         $Response = '';
         $Handle = fsockopen(
-            $_SERVER['APIPHP']['Config']['Mail']['server'],
-            $_SERVER['APIPHP']['Config']['Mail']['port'],
+            $_SERVER['APIPHP']['Config']['core\Mail']['server'],
+            $_SERVER['APIPHP']['Config']['core\Mail']['port'],
             $Errno,
             $ErrMsg,
             $Timeout
@@ -42,7 +42,7 @@ class Mail
         }
         stream_set_blocking($Handle, 1);
         $Response .= fgets($Handle, 512);
-        $Send = 'EHLO ' . '=?utf-8?B?' . base64_encode($_SERVER['APIPHP']['Config']['Mail']['fromName']) . '?=' . "\r\n";
+        $Send = 'EHLO ' . '=?utf-8?B?' . base64_encode($_SERVER['APIPHP']['Config']['core\Mail']['fromName']) . '?=' . "\r\n";
         if (fwrite($Handle, $Send) === false) {
             return false;
         }
@@ -58,17 +58,17 @@ class Mail
             self::sendError($Handle);
         }
         $Response .= fgets($Handle, 512);
-        $Send = base64_encode($_SERVER['APIPHP']['Config']['Mail']['userName']) . "\r\n";
+        $Send = base64_encode($_SERVER['APIPHP']['Config']['core\Mail']['userName']) . "\r\n";
         if (fwrite($Handle, $Send) === false) {
             self::sendError($Handle);
         }
         $Response .= fgets($Handle, 512);
-        $Send = base64_encode($_SERVER['APIPHP']['Config']['Mail']['passWord']) . "\r\n";
+        $Send = base64_encode($_SERVER['APIPHP']['Config']['core\Mail']['passWord']) . "\r\n";
         if (fwrite($Handle, $Send) === false) {
             self::sendError($Handle);
         }
         $Response .= fgets($Handle, 512);
-        $Send = 'MAIL FROM: <' . $_SERVER['APIPHP']['Config']['Mail']['fromAddress'] . ">\r\n";
+        $Send = 'MAIL FROM: <' . $_SERVER['APIPHP']['Config']['core\Mail']['fromAddress'] . ">\r\n";
 
         if (fwrite($Handle, $Send) === false) {
             self::sendError($Handle);
@@ -86,12 +86,12 @@ class Mail
         $Response .= fgets($Handle, 512);
         if (!empty($NewFromAddress)) {
             $Head = 'From: =?utf-8?B?' . base64_encode(
-                    $_SERVER['APIPHP']['Config']['Mail']['fromName']
+                    $_SERVER['APIPHP']['Config']['core\Mail']['fromName']
                 ) . '?= <' . $NewFromAddress . ">\r\n";
         } else {
             $Head = 'From: =?utf-8?B?' . base64_encode(
-                    $_SERVER['APIPHP']['Config']['Mail']['fromName']
-                ) . '?= <' . $_SERVER['APIPHP']['Config']['Mail']['fromAddress'] . ">\r\n";
+                    $_SERVER['APIPHP']['Config']['core\Mail']['fromName']
+                ) . '?= <' . $_SERVER['APIPHP']['Config']['core\Mail']['fromAddress'] . ">\r\n";
         }
         $Head .= 'To: ' . $Address . "\r\n";
         $Head .= 'Subject: =?utf-8?B?' . base64_encode($Title) . "?=\r\n";

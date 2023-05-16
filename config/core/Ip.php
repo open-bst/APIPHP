@@ -1,4 +1,4 @@
 <?php
-$_SERVER['APIPHP']['Config']['Ip']=[
+$_SERVER['APIPHP']['Config']['core\Ip']=[
 	'exitProgram'=>TRUE
 ];

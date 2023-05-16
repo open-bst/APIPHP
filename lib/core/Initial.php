@@ -12,8 +12,15 @@ namespace core;
 
 class Initial
 {
+    //获取配置项
+    public static function getConfig($Key)
+    {
+        return $_SERVER['APIPHP']['Config']['core\Initial'][$Key];
+    }
+
     //自动加载
-    public static function autoload($ClassName) {
+    public static function autoload($ClassName)
+    {
         if (!file_exists(_ROOT . '/lib/' . str_replace(['\\', '//'], '/', $ClassName) . '.php')) {
             Api::wrong(['level' => 'F', 'detail' => 'Error#C.0.5' . "\r\n\r\n @ " . $ClassName, 'code' => 'C.0.5']);
         } else {
@@ -73,13 +80,22 @@ class Initial
         return true;
     }
 
-    //获取配置项
-    public static function getConfig($Key){
-        return $_SERVER['APIPHP']['Config']['core\Initial'][$Key];
+    //Debug模式
+    public static function debug()
+    {
+        if (!_DEBUG) {
+            error_reporting(0);
+        } else {
+            header('Cache-Control: no-cache,must-revalidate');
+            header('Pragma: no-cache');
+            header("Expires: -1");
+            header('Last-Modified: Thu, 01 Jan 1970 00:00:00 GMT');
+        }
     }
 
     //路由
-    public static function route(){
+    public static function route()
+    {
         $_SERVER['APIPHP']['Option'] = getopt('', ['path:']);
         if (empty($_SERVER['APIPHP']['Option']['path'])) {
             if (!isset($_GET['p_a_t_h'])) {

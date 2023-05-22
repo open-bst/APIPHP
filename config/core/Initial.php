@@ -12,8 +12,6 @@
 $_SERVER['APIPHP']['Config']['core\Initial']=[
 	//调试模式
 	'debug'=>TRUE,
-	//超时时限（秒）
-	'timeLimit'=>FALSE,
 	//安全码
 	'safeCode'=>'',
 	//时区

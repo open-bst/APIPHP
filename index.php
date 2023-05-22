@@ -11,7 +11,9 @@ use core\Log;
 
   框架版本号：1.0.0
 */
-
+if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    exit;
+}
 const _VERSION = '1.0.0';
 define('_TIME', microtime(true));
 define('_ROOT', str_replace(['\\', '//'], '/', dirname(__FILE__)));
@@ -21,28 +23,15 @@ $_SERVER['APIPHP'] = ['Config' => [], 'Log' => [], 'Option' => [], 'Runtime' => 
 require(_ROOT . '/config/core/Initial.php');
 require(_ROOT . '/lib/core/Initial.php');
 
-define('_DEBUG', \core\Initial::getConfig('debug'));
+date_default_timezone_set($_SERVER['APIPHP']['Config']['core\Initial']['timeZone']);
 
-register_shutdown_function(['core\Initial','fatalErr']);
-set_error_handler(['core\Initial','sysErr'], E_ALL | E_STRICT);
-date_default_timezone_set(\core\Initial::getConfig('timeZone'));
-if (\core\Initial::getConfig('timeLimit') !== false) {
-    set_time_limit(\core\Initial::getConfig('timeLimit'));
-}
+define('_DEBUG', $_SERVER['APIPHP']['Config']['core\Initial']['debug']);
+register_shutdown_function(['core\Initial', 'fatalErr']);
+set_error_handler(['core\Initial', 'sysErr'], E_ALL | E_STRICT);
+spl_autoload_register(['core\Initial', 'autoload']);
 
-spl_autoload_register(['core\Initial','autoload']);
-
-//Debug
 \core\Initial::debug();
-
-if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    die('HELLO.');
-}
-
-//缓冲区控制开启
 ob_start();
-
-//路由
 \core\Initial::route();
 
 if (!empty($_SERVER['APIPHP']['Log'])) {

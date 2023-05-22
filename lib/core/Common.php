@@ -71,4 +71,9 @@ class Common
             ]
         );
     }
+
+    public static function __callStatic($Method, $Parameters)
+    {
+        self::unknownStaticMethod(__CLASS__, $Method);
+    }
 }

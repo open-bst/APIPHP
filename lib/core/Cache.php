@@ -80,7 +80,7 @@ class Cache
 
         $CacheFile = self::fileInfo($CacheDir . $Path . '.php');
 
-        if (!_DEBUG && !$Force && $CacheFile['exist'] && $CacheFile['time'] + $_SERVER['APIPHP']['Config']['core\Cache']['expTime'] > _TIME) {
+        if (!_DEBUG && !$Force && $CacheFile['exist'] && ($CacheFile['time'] + $_SERVER['APIPHP']['Config']['core\Cache']['expTime'] > _TIME || $_SERVER['APIPHP']['Config']['core\Cache']['expTime'] < 1)) {
             return false;
         }
 
@@ -169,7 +169,6 @@ class Cache
         closedir($DirHandle);
     }
 
-    //调用方法不存在
     public static function __callStatic($Method, $Parameters)
     {
         Common::unknownStaticMethod(__CLASS__, $Method);

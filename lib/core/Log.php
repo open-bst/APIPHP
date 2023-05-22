@@ -55,7 +55,7 @@ class Log
     //写入文件
     public static function output(): bool
     {
-        if (strlen(\core\Initial::getConfig('safeCode')) < 10) {
+        if (strlen($_SERVER['APIPHP']['Config']['core\Initial']['safeCode']) < 10) {
             return false;
         }
 
@@ -87,7 +87,7 @@ class Log
                 "\r\n";
         }
 
-        $FilePath = '/temp/log/' . $_SERVER['APIPHP']['Config']['core\Base']['safeCode'] . date('/Y-m/d', _TIME);
+        $FilePath = '/temp/log/' . $_SERVER['APIPHP']['Config']['core\Initial']['safeCode'] . date('/Y-m/d', _TIME);
         if (!file_exists(_ROOT . $FilePath)) {
             mkdir(_ROOT . $FilePath, 0777, true);
         }
@@ -134,7 +134,6 @@ class Log
         return $_SERVER['APIPHP']['Log'];
     }
 
-    //调用方法不存在
     public static function __callStatic($Method, $Parameters)
     {
         Common::unknownStaticMethod(__CLASS__, $Method);

@@ -241,7 +241,6 @@ class Pay
         }
     }
 
-    //调用方法不存在
     public static function __callStatic($Method, $Parameters)
     {
         Common::unknownStaticMethod(__CLASS__, $Method);

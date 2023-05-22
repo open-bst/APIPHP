@@ -12,12 +12,6 @@ namespace core;
 
 class Initial
 {
-    //获取配置项
-    public static function getConfig($Key)
-    {
-        return $_SERVER['APIPHP']['Config']['core\Initial'][$Key];
-    }
-
     //自动加载
     public static function autoload($ClassName)
     {
@@ -80,7 +74,7 @@ class Initial
         return true;
     }
 
-    //Debug模式
+    //调试模式
     public static function debug()
     {
         if (!_DEBUG) {
@@ -107,6 +101,7 @@ class Initial
         }
         define('_URI', $_SERVER['APIPHP']['URI']);
         Cache::compile(['path' => _URI]);
+
         if (file_exists(_ROOT . '/temp/cache' . _URI . '.php')) {
             require(_ROOT . '/temp/cache' . _URI . '.php');
         } elseif (file_exists(_ROOT . '/asset' . _URI . '/index.html')) {
@@ -114,8 +109,8 @@ class Initial
             echo($Content);
         } elseif (file_exists(_ROOT . '/asset' . _URI)) {
             header('Location: /asset' . _URI);
-        } elseif (!empty($_SERVER['APIPHP']['Config']['core\Base']['pageNotFound'])) {
-            header('Location: ' . $_SERVER['APIPHP']['Config']['core\Base']['pageNotFound']);
+        } elseif (!empty($_SERVER['APIPHP']['Config']['core\Initial']['pageNotFound'])) {
+            header('Location: ' . $_SERVER['APIPHP']['Config']['core\Initial']['pageNotFound']);
         } else {
             Api::wrong(['level' => 'U', 'detail' => 'Error#C.0.0', 'code' => 'C.0.0', 'http' => 404]);
         }

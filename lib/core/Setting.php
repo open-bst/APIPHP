@@ -38,9 +38,9 @@ class Setting
                 $TempText .= '\'' . str_replace("'", '"', $Val) . '\',' . "\r\n";
             } elseif (is_bool($Val)) {
                 if ($Val) {
-                    $TempText .= 'TRUE,' . "\r\n";
+                    $TempText .= 'true,' . "\r\n";
                 } else {
-                    $TempText .= 'FALSE,' . "\r\n";
+                    $TempText .= 'false,' . "\r\n";
                 }
             } elseif (is_array($Val)) {
                 $TempText .= self::arrayToStr($Val) . ',' . "\r\n";
@@ -63,9 +63,9 @@ class Setting
             return '\'' . $ValueName . '\'=>\'' . str_replace("'", '\\\'', $Value) . '\',' . "\r\n";
         } elseif (is_bool($Value)) {
             if ($Value) {
-                return '\'' . $ValueName . '\'=>TRUE,' . "\r\n";
+                return '\'' . $ValueName . '\'=>true,' . "\r\n";
             } else {
-                return '\'' . $ValueName . '\'=>FALSE,' . "\r\n";
+                return '\'' . $ValueName . '\'=>false,' . "\r\n";
             }
         } elseif (is_array($Value)) {
             return '\'' . $ValueName . '\'=>' . self::arrayToStr($Value) . ',' . "\r\n";

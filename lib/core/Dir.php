@@ -15,7 +15,7 @@ class Dir
     //目录文件属性
     public static function state($UnionData = []): array
     {
-        $Path = Common::quickParameter($UnionData, 'path', '路径');
+        $Path = Common::quickParameter($UnionData, 'path', '路径', true, null, true);
 
         if (!is_array($Path)) {
             $PathArray = [$Path];
@@ -81,7 +81,7 @@ class Dir
     //目录大小
     public static function size($UnionData = [])
     {
-        $Path = Common::quickParameter($UnionData, 'path', '路径');
+        $Path = Common::quickParameter($UnionData, 'path', '路径',true,null,true);
         $Unit = Common::quickParameter($UnionData, 'unit', '单位', false);
 
         $DirSize = self::sizeCall(Common::diskPath($Path));
@@ -123,7 +123,7 @@ class Dir
     //删除目录
     public static function delete($UnionData = [])
     {
-        $Path = Common::quickParameter($UnionData, 'path', '路径');
+        $Path = Common::quickParameter($UnionData, 'path', '路径',true,null,true);
 
         if (!is_array($Path)) {
             self::deleteCall(Common::diskPath($Path));

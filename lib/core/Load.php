@@ -107,7 +107,7 @@ class Load
                 $TempField = str_replace('[]', '', $TempOp[0]);
                 if ((!isset($_FILES[$TempField])) || (isset($TempOp[1]) && strtoupper(
                             $TempOp[1]
-                        ) == 'TRUE' && empty($_FILES[$TempField]['tmp_name']))) {
+                        ) == 'true' && empty($_FILES[$TempField]['tmp_name']))) {
                     Api::wrong(
                         ['level' => 'F', 'detail' => 'Error#M.4.0' . "\r\n\r\n @ " . $TempField, 'code' => 'M.4.0']
                     );

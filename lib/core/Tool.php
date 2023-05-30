@@ -72,7 +72,7 @@ class Tool
     //获取Header指定字段的值
     public static function getHeader($UnionData = []): array
     {
-        $Field = Common::quickParameter($UnionData, 'field', '字段');
+        $Field = Common::quickParameter($UnionData, 'field', '字段', true, null, true);
         $ReturnArray = [];
         foreach ($Field as $Val) {
             $FieldName = 'HTTP_' . str_replace('-', '_', strtoupper($Val));
@@ -87,7 +87,7 @@ class Tool
     //向目标地址发送数据
     public static function send($UnionData = [])
     {
-        $Url = Common::quickParameter($UnionData, 'url', '地址');
+        $Url = Common::quickParameter($UnionData, 'url', '地址', true, null, true);
         $Mode = Common::quickParameter($UnionData, 'mode', '模式', false, 'GET');
         $Data = Common::quickParameter($UnionData, 'data', '数据', false, []);
         $File = Common::quickParameter($UnionData, 'file', '文件', false, []);

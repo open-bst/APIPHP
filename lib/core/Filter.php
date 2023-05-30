@@ -18,7 +18,7 @@ class Filter
     {
         if (isset($OpArray[0]) && strtoupper(
                 $OpArray[0]
-            ) == 'TRUE' && ($Value === '' || $Value === null || $Value === [])) {
+            ) == 'true' && ($Value === '' || $Value === null || $Value === [])) {
             return false;
         }
         return true;

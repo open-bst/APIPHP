@@ -1,7 +1,7 @@
 <?php
 
 $_SERVER['APIPHP']['Config']['core\Db']=[
-	'log'=>FALSE,
+	'log'=>false,
 
 	'dbInfo'=>[
 		'default'=>[

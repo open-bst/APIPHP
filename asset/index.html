@@ -11,12 +11,12 @@
 <meta name="x5-orientation" content="portrait">
 <title>欢迎 -APIPHP</title>
 <script type="text/javascript" src="/asset/js/clipboard.min.js"></script>
-<script type="text/javascript" src="/js/bluebird.min.js"></script>
-<script type="text/javascript" src="/js/axios.min.js"></script>
-<script type="text/javascript" src="/js/md5.js"></script>
-<script type="text/javascript" src="/js/vue.min.js"></script>
-<script type="text/javascript" src="/js/js.js"></script>
-<link rel="stylesheet" href="/css/style.css" type="text/css" />
+<script type="text/javascript" src="/asset/js/bluebird.min.js"></script>
+<script type="text/javascript" src="/asset/js/axios.min.js"></script>
+<script type="text/javascript" src="/asset/js/md5.js"></script>
+<script type="text/javascript" src="/asset/js/vue.min.js"></script>
+<script type="text/javascript" src="/asset/js/js.js"></script>
+<link rel="stylesheet" href="/asset/css/style.css" type="text/css" />
 </head>
 <body>
 	<!--[if IE]>
@@ -33,7 +33,7 @@
         <div class="note note-slide note-error" v-if="version.remote.status=='error'">获取框架最新版本号失败</div>
         <div class="main">
             <div class="main-logo">
-                <img src="/img/logo.svg"/>
+                <img src="/asset/img/logo.svg"/>
             </div>
             <div class="main-nav">
                 <div class="main-nav-class">
@@ -920,7 +920,7 @@
         mounted:function (){
             this.$nextTick(function(){
                 axios
-                .get('/version.json')
+                .get('/asset/version.json')
                 .then(function(response){
                     that.version.native.value=response.data.version;
                     that.version.native.status="success";

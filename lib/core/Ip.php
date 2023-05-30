@@ -214,7 +214,7 @@ class Ip
         return true;
     }
 
-    //IP黑名单检测
+    //IP名单检测
     public static function check($UnionData = []): bool
     {
         $IP = Common::quickParameter($UnionData, 'ip', 'ip', false);
@@ -228,11 +228,7 @@ class Ip
         }
 
         if (!self::find(['type' => 'w', 'ip' => $IP]) && self::find(['type' => 'b', 'ip' => $IP])) {
-            if ($_SERVER['APIPHP']['Config']['core\Ip']['exitProgram']) {
-                Api::wrong(['level' => 'F', 'detail' => 'Error#M.3.3', 'code' => 'M.3.3']);
-            } else {
-                return false;
-            }
+            return false;
         }
         return false;
     }
@@ -240,7 +236,7 @@ class Ip
     //导出全部记录
     public static function getAll($UnionData = []): array
     {
-        $Type = Common::quickParameter($UnionData, 'type', '类型');
+        $Type = Common::quickParameter($UnionData, 'type', '类型', true, null, true);
 
         self::initial();
 
@@ -288,8 +284,8 @@ class Ip
     //清理
     public static function clean($UnionData = [])
     {
+        $Type = Common::quickParameter($UnionData, 'type', '类型', true, null, true);
         $Reset = Common::quickParameter($UnionData, 'reset', '重置', false, false);
-        $Type = Common::quickParameter($UnionData, 'type', '类型');
 
         self::initial();
 

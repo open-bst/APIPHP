@@ -39,7 +39,7 @@ class Api
 
     public static function wrong($UnionData)
     {
-        $Detail = Common::quickParameter($UnionData, 'detail', '详情');
+        $Detail = Common::quickParameter($UnionData, 'detail', '详情', true, null, true);
         $Code = Common::quickParameter($UnionData, 'code', '状态码', false, 0);
         $Stack = Common::quickParameter($UnionData, 'stack', '堆栈', false, false);
         $Log = Common::quickParameter($UnionData, 'log', '日志', false, true);

@@ -11,7 +11,7 @@
 
 $_SERVER['APIPHP']['Config']['core\Initial']=[
 	//调试模式
-	'debug'=>TRUE,
+	'debug'=>true,
 	//安全码
 	'safeCode'=>'',
 	//时区

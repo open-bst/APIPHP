@@ -67,7 +67,7 @@ class Data
     //获取
     public static function get($UnionData = [])
     {
-        $Key = Common::quickParameter($UnionData, 'key', '键');
+        $Key = Common::quickParameter($UnionData, 'key', '键', true, null, true);
         $Prefix = Common::quickParameter($UnionData, 'prefix', '前缀', false, '');
         $Callback = Common::quickParameter($UnionData, 'callback', '回调', false);
 
@@ -187,7 +187,7 @@ class Data
     //连接Redis
     private static function redisConnect()
     {
-        self::$Connect = new Redis();
+        self::$Connect = new \Redis();
         try {
             self::$Connect->connect(
                 $_SERVER['APIPHP']['Config']['core\Data']['connect']['redis']['address'],
@@ -198,7 +198,9 @@ class Data
             Api::wrong(['level' => 'F', 'detail' => 'Error#M.12.1', 'code' => 'M.12.1']);
         }
         if ($_SERVER['APIPHP']['Config']['core\Data']['connect']['redis']['password'] != '') {
-            self::$Connect->auth($_SERVER['APIPHP']['Config']['core\Data']['connect']['redis']['password']) ?: Api::wrong(
+            self::$Connect->auth(
+                $_SERVER['APIPHP']['Config']['core\Data']['connect']['redis']['password']
+            ) ?: Api::wrong(
                 ['level' => 'F', 'detail' => 'Error#M.12.2', 'code' => 'M.12.2']
             );
         }

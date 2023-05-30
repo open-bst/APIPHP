@@ -26,9 +26,55 @@ class Cache
         fclose($Handle);
     }
 
+    //查找钩子文件
+    private static function hookList($Path){
+        $List=[];
+        $PathArray=explode('/',$Path);
+        if(count($PathArray)>2){
+            $HookPath=_ROOT.'/source';
+            array_pop($PathArray);
+            array_shift($PathArray);
+            foreach ($PathArray as $Val){
+                $HookPath.='/'.$Val;
+                $File=$HookPath.'/hook.apiphp';
+                if(file_exists($File)){
+                    $List[]=$File;
+                }
+            }
+        }
+        return $List;
+    }
+
+    //获取钩子代码
+    private static function hookCode($Path){
+        $List=self::hookList($Path);
+        $Code='';
+        foreach ($List as $Val){
+            if(file_exists($Val)){
+                $HookFile= file_get_contents($Val);
+                if ($HookFile === false) {
+                    Api::wrong(['level' => 'F', 'detail' => 'Error#M.11.0', 'code' => 'M.11.0']);
+                }
+                $Code.=$HookFile."\r\n";
+            }
+        }
+        return $Code;
+    }
+
+    //获取钩子代码改动状态
+    private static function hookChange($Path){
+        $List=self::hookList($Path);
+        foreach ($List as $Val){
+            $HookFile=self::fileInfo($Val);
+            if($HookFile['time'] + $_SERVER['APIPHP']['Config']['core\Cache']['expTime'] > _TIME){
+                return true;
+            }
+        }
+        return false;
+    }
 
     //模板编译
-    private static function templateTranslate($From, $To, $CacheChanged)
+    private static function templateTranslate($Path,$From, $To, $CacheChanged)
     {
         if ($CacheChanged && file_exists($From)) {
             if (filesize($From) > 0) {
@@ -36,12 +82,14 @@ class Cache
                 if ($Cache === false) {
                     Api::wrong(['level' => 'F', 'detail' => 'Error#M.11.0', 'code' => 'M.11.0']);
                 }
-                $Cache = str_replace([';;'], [';'], $Cache);
+                $Cache=self::hookCode($Path).$Cache;
+                $Cache = str_replace([';;','<?php'], [';',''], $Cache);
                 $Cache = preg_replace(['/(?:^|\n|\s+)\/\/.*/', "/\/\*(.|\r\n)*\*\//"], ['', "\r\n"], $Cache);
                 $Cache = preg_replace(['/(?:^|\n|\s+)#.*/', '/\?>(\s\r\n)*/'], '', $Cache);
                 $Cache = preg_replace("/(\?>(\\s*<\?php)+)/", "\r\n", $Cache);
                 $Cache = preg_replace("/(<\?(\\s*\r?\n)+)/", "<?php\r\n", $Cache);
                 $Cache = preg_replace("/(\r?\n(\\s*\r?\n)+)/", "\r\n", $Cache);
+                $Cache = '<?php'.$Cache;
                 self::writeCache($Cache, $To);
             }
         }
@@ -68,7 +116,7 @@ class Cache
     //编译
     public static function compile($UnionData = []): bool
     {
-        $Path = Common::quickParameter($UnionData, 'path', '路径');
+        $Path = Common::quickParameter($UnionData, 'path', '路径',true,null,true);
         $Force = Common::quickParameter($UnionData, 'force', '强制编译', false, false);
 
         if (_DEBUG) {
@@ -80,7 +128,7 @@ class Cache
 
         $CacheFile = self::fileInfo($CacheDir . $Path . '.php');
 
-        if (!_DEBUG && !$Force && $CacheFile['exist'] && ($CacheFile['time'] + $_SERVER['APIPHP']['Config']['core\Cache']['expTime'] > _TIME || $_SERVER['APIPHP']['Config']['core\Cache']['expTime'] < 1)) {
+        if (!_DEBUG && !$Force && $CacheFile['exist'] && (($CacheFile['time'] + $_SERVER['APIPHP']['Config']['core\Cache']['expTime'] > _TIME&&!self::hookChange($Path)) || $_SERVER['APIPHP']['Config']['core\Cache']['expTime'] < 1)) {
             return false;
         }
 
@@ -142,7 +190,7 @@ class Cache
             }
         }
 
-        self::templateTranslate($SourcePath['path'], $CacheFile['path'], $CacheChanged);
+        self::templateTranslate($Path,$SourcePath['path'], $CacheFile['path'], $CacheChanged);
         return true;
     }
 

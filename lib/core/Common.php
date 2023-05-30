@@ -13,7 +13,7 @@ namespace core;
 class Common
 {
     //快捷传参
-    public static function quickParameter($UnionData, $Name, $Dialect, $Must = true, $Default = null)
+    public static function quickParameter($UnionData, $Name, $Dialect, $Must = true, $Value = null, $Default = false)
     {
         if (isset($UnionData[$Name])) {
             return $UnionData[$Name];
@@ -27,7 +27,10 @@ class Common
             return $UnionData[mb_convert_case($Dialect, MB_CASE_LOWER, 'UTF-8')];
         } elseif (isset($UnionData[mb_convert_case($Dialect, MB_CASE_UPPER, 'UTF-8')])) {
             return $UnionData[mb_convert_case($Dialect, MB_CASE_UPPER, 'UTF-8')];
+        } elseif (isset($UnionData[0]) && $Default) {
+            return $UnionData[0];
         }
+
         if ($Must) {
             $Stack = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
             $ErrMsg = '';
@@ -36,11 +39,11 @@ class Common
             }
             Api::wrong(['level' => 'F', 'detail' => 'Error#C.0.3' . $ErrMsg, 'code' => 'C.0.3']);
         }
-        return $Default;
+        return $Value;
     }
 
     //获取磁盘路径
-    public static function diskPath($Path, $Prefix = '')
+    public static function diskPath($Path)
     {
         $Path = str_replace(['\\', '//'], ['/', '/'], $Path);
         if (substr($Path, 0, 1) == '/') {
@@ -50,11 +53,7 @@ class Common
             $Path = substr($Path, 0, -1);
         }
         if (substr($Path, 0, strlen(_ROOT)) != _ROOT) {
-            if (!empty($Prefix)) {
-                $Path = _ROOT . $Prefix . '/' . $Path;
-            } else {
-                $Path = _ROOT . '/' . $Path;
-            }
+            $Path = _ROOT . '/' . $Path;
         }
 
         return $Path;

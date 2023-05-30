@@ -23,11 +23,12 @@ class Vcode
     //验证码
     public static function create($UnionData = [])
     {
-        $Word = Common::quickParameter($UnionData, 'word', '文字');
+        $Word = Common::quickParameter($UnionData, 'word', '文字', true, null, true);
         $Base64 = Common::quickParameter($UnionData, 'base64', 'base64', false, false);
         $Width = Common::quickParameter($UnionData, 'width', '宽度', false, 80);
         $Height = Common::quickParameter($UnionData, 'height', '高度', false, 30);
         $WordColor = Common::quickParameter($UnionData, 'word_color', '文字颜色', false, '#000000');
+        $Background = Common::quickParameter($UnionData, 'background', '背景颜色', false, '#ffffff');
         $Dot = Common::quickParameter($UnionData, 'dot', '点', false, 15);
         $Line = Common::quickParameter($UnionData, 'line', '线', false, 2);
         $NoiseHexColor = Common::quickParameter($UnionData, 'noise_color', '噪点颜色', false, '#ff6600');
@@ -40,8 +41,10 @@ class Vcode
 
         $FontSize = $Height * 0.5;
         $NewImg = imagecreate($Width, $Height);
+        $BgRGBColor = self::hexRGB($Background);
         $WordRGBColor = self::hexRGB($WordColor);
         $NoiseRGBColor = self::hexRGB($NoiseHexColor);
+        imagecolorallocate($NewImg, $BgRGBColor['red'], $BgRGBColor['green'], $BgRGBColor['blue']);
         $TextColor = imagecolorallocate($NewImg, $WordRGBColor['red'], $WordRGBColor['green'], $WordRGBColor['blue']);
         $NoiseColor = imagecolorallocate(
             $NewImg,
@@ -70,8 +73,8 @@ class Vcode
             );
         }
         $AllText = imagettfbbox($FontSize, 0, $Font, $Word);
-        $X = ($Width - $AllText[4]) / 2;
-        $Y = ($Height - $AllText[5]) / 2;
+        $X = intval(($Width - $AllText[4]) / 2);
+        $Y = intval(($Height - $AllText[5]) / 2);
         imagettftext($NewImg, $FontSize, 0, $X, $Y, $TextColor, $Font, $Word);
         @ob_clean();
 
@@ -80,7 +83,7 @@ class Vcode
             header('Cache-Control: no-cache,must-revalidate');
             header('Pragma: no-cache');
             header("Expires: -1");
-            header('Last-Modified: ' . gmdate('D, d M Y 00:00:00', _TIME) . ' GMT');
+            header('Last-Modified: ' . gmdate('D, d M Y 00:00:00', intval(_TIME)) . ' GMT');
             imagejpeg($NewImg);
             imagedestroy($NewImg);
         } else {

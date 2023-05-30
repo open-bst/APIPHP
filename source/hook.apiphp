@@ -1,0 +1,7 @@
+<?php
+
+\core\Hook::add([
+    [
+        'app_user-login_success' => ['User::loignSuccess']
+    ]
+]);

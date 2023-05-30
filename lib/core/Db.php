@@ -24,7 +24,7 @@ class Db
     //选择数据库
     public static function choose($UnionData)
     {
-        $DbName = Common::quickParameter($UnionData, 'db_name', '数据库');
+        $DbName = Common::quickParameter($UnionData, 'db_name', '数据库', true, null, true);
         if (!empty($DbName)) {
             $_SERVER['APIPHP']['Config']['core\Db']['default'] = $DbName;
         }
@@ -73,20 +73,21 @@ class Db
     }
 
     //参数检查
-    private static function parameterCheck($UnionData, $Extra = []): array
+    private static function parameterCheck($UnionData, $Extra = [], $Default = ''): array
     {
+        $Result = [];
         $Parameters = [
-            'table' => Common::quickParameter($UnionData, 'table', '表'),
-            'field' => Common::quickParameter($UnionData, 'field', '字段', false, []),
-            'value' => Common::quickParameter($UnionData, 'value', '值', false, []),
-            'condition' => Common::quickParameter($UnionData, 'condition', '条件', false, '='),
-            'order' => Common::quickParameter($UnionData, 'order', '顺序', false),
-            'desc' => Common::quickParameter($UnionData, 'desc', '降序', false, false),
-            'limit' => Common::quickParameter($UnionData, 'limit', '限制', false),
-            'index' => Common::quickParameter($UnionData, 'index', '索引', false),
-            'sql' => Common::quickParameter($UnionData, 'sql', 'sql', false),
-            'bind' => Common::quickParameter($UnionData, 'bind', '绑定', false, []),
-            'dbName' => Common::quickParameter($UnionData, 'db_name', '数据库', false, ''),
+            'table' => ['table', '表', true, null],
+            'field' => ['field', '字段', false, []],
+            'value' => ['value', '值', false, []],
+            'condition' => ['condition', '条件', false, '='],
+            'order' => ['order', '顺序', false, null],
+            'desc' => ['desc', '降序', false, false],
+            'limit' => ['limit', '限制', false, null],
+            'index' => ['index', '索引', false, null],
+            'sql' => ['sql', 'sql', false, null],
+            'bind' => ['bind', '绑定', false, []],
+            'dbName' => ['db_name', '数据库', false, '']
         ];
 
         $ExtraParameters = [
@@ -95,16 +96,19 @@ class Db
             'fieldLimit' => ['field_limit', '字段限制', false, null],
             'rowCount' => ['row_count', '行数统计', false, false],
             'autoOp' => ['auto_operate', '自动操作', false, null],
-            'groupBy' => ['group_by', '分组', false, null]
+            'groupBy' => ['group_by', '分组', false, null],
+            'unlock' => ['unlock', '解锁', false, false]
         ];
 
-        foreach ($ExtraParameters as $Key => $Val) {
-            if (in_array($Key, $Extra)) {
-                $Parameters[$Key] = Common::quickParameter($UnionData, $Val[0], $Val[1], $Val[2], $Val[3]);
-            }
+        foreach ($Extra as $Val) {
+            $Parameters[$Val] = $ExtraParameters[$Val];
         }
 
-        return $Parameters;
+        foreach ($Parameters as $Key => $Val) {
+            $Result[$Key] = Common::quickParameter($UnionData, $Val[0], $Val[1], $Val[2], $Val[3], $Default == $Key);
+        }
+
+        return $Result;
     }
 
     //创建绑定
@@ -123,6 +127,9 @@ class Db
     {
         if (!$Mix) {
             foreach ($Field as $Key => $Val) {
+                if(!isset($Data[$Key])){
+                    Api::wrong(['level' => 'F', 'detail' => 'Error#M.8.5' . "\r\n\r\n @ " . $Val, 'code' => 'M.8.5']);
+                }
                 self::$Stmts[$StmtKey]->bindValue(':' . $Tag . $Val, $Data[$Key]);
             }
         } else {
@@ -140,8 +147,8 @@ class Db
         try {
             self::$Stmts[$StmtKey]->execute();
         } catch (PDOException $Err) {
-            $ModuleError = 'Detail: ' . $Err->getMessage(
-                ) . ' | SQL String: ' . $PreSql . ' | errno:' . $Err->getCode();
+            $ModuleError = 'Detail: ' . $Err->getMessage() . ' | SQL String: ' . $PreSql . ' | errno:' . $Err->getCode(
+                );
             Api::wrong(['level' => 'F', 'detail' => 'Error#M.8.2' . "\r\n\r\n @ " . $ModuleError, 'code' => 'M.8.2']);
         }
 
@@ -305,7 +312,7 @@ class Db
     //查询一条数据
     public static function select($UnionData = [])
     {
-        $Para = self::parameterCheck($UnionData, ['fieldLimit']);
+        $Para = self::parameterCheck($UnionData, ['fieldLimit'],'table');
 
         $Para['limit'] = [1];
         $Para['groupBy'] = null;
@@ -324,7 +331,7 @@ class Db
     //查询多条数据
     public static function selectMore($UnionData = [])
     {
-        $Para = self::parameterCheck($UnionData, ['fieldLimit', 'groupBy']);
+        $Para = self::parameterCheck($UnionData, ['fieldLimit', 'groupBy'],'table');
 
         $QueryString = 'SELECT ' . self::getFieldList($Para['fieldLimit'], '*') . ' FROM' . self::getTableList(
                 $Para['table']
@@ -340,7 +347,7 @@ class Db
     //记录总数
     public static function total($UnionData = [])
     {
-        $Para = self::parameterCheck($UnionData, ['fieldLimit', 'groupBy']);
+        $Para = self::parameterCheck($UnionData, ['fieldLimit', 'groupBy'],'table');
 
         $Para['fieldLimit'] = '';
         if (!empty($Para['groupBy'])) {
@@ -367,7 +374,7 @@ class Db
     //求和
     public static function sum($UnionData = []): array
     {
-        $Para = self::parameterCheck($UnionData, ['sumField']);
+        $Para = self::parameterCheck($UnionData, ['sumField'],'table');
 
         $SumSql = '';
         foreach ($Para['sumField'] as $Key => $Val) {
@@ -417,10 +424,18 @@ class Db
         return self::execBind($StmtKey, $QueryString, 'InsertId');
     }
 
+    //全表误操作防护
+    private static function tableChange($Unlock,$Field){
+        if(!$Unlock&&empty($Field)){
+            Api::wrong(['level' => 'F', 'detail' => 'Error#M.8.4', 'code' => 'M.8.4']);
+        }
+    }
+
     //删除数据
     public static function delete($UnionData = [])
     {
-        $Para = self::parameterCheck($UnionData, ['rowCount']);
+        $Para = self::parameterCheck($UnionData, ['rowCount','unlock'],'table');
+        self::tableChange($Para['unlock'],$Para['field']);
 
         $Para['groupBy'] = null;
         $QueryString = 'DELETE FROM' . self::getTableList($Para['table']) . self::queryToSql($Para);
@@ -435,7 +450,8 @@ class Db
     //更新数据
     public static function update($UnionData = [])
     {
-        $Para = self::parameterCheck($UnionData, ['data', 'rowCount', 'autoOp']);
+        $Para = self::parameterCheck($UnionData, ['data', 'rowCount', 'autoOp','unlock'],'table');
+        self::tableChange($Para['unlock'],$Para['field']);
 
         $DataSql = null;
         $AutoOpNumber = 0;
@@ -465,7 +481,7 @@ class Db
     //查询自定义语句
     public static function other($UnionData = [])
     {
-        $Sql = Common::quickParameter($UnionData, 'sql', 'sql', false);
+        $Sql = Common::quickParameter($UnionData, 'sql', 'sql', true, null, true);
         $Bind = Common::quickParameter($UnionData, 'bind', '绑定', false, []);
         $Fetch = Common::quickParameter($UnionData, 'fetch_result', '取回结果', false, false);
         $DbName = Common::quickParameter($UnionData, 'db_name', '数据库', false, '');
@@ -479,9 +495,9 @@ class Db
     //事务
     public static function acid($UnionData = []): bool
     {
-        $Option = Common::quickParameter($UnionData, 'option', '操作');
+        $Option = Common::quickParameter($UnionData, 'option', '操作',true,null, true);
 
-        if ($Option == 'begin') {
+        if ($Option == 'start') {
             try {
                 self::$DbHandle->beginTransaction();
                 return true;

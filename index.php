@@ -30,9 +30,12 @@ register_shutdown_function(['core\Initial', 'fatalErr']);
 set_error_handler(['core\Initial', 'sysErr'], E_ALL | E_STRICT);
 spl_autoload_register(['core\Initial', 'autoload']);
 
+\core\Hook::initial();
+
 \core\Initial::debug();
 ob_start();
 \core\Initial::route();
+
 
 if (!empty($_SERVER['APIPHP']['Log'])) {
     Log::output();

@@ -21,4 +21,5 @@ $_SERVER['APIPHP']['Config']['core\Api']=[
         ],
         'ignore'=>[],
 	],
+    'document'=>true
 ];

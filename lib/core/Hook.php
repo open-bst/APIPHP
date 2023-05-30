@@ -16,23 +16,44 @@ class Hook
     //初始化
     public static function initial()
     {
-        $_SERVER['APIPHP']['Hook']=['History'=>[],'List'=>[]];
+        $_SERVER['APIPHP']['Runtime']['core/Hook']=[];
+        $FilePath=_ROOT.'/source/hook.apiphp';
+        if(file_exists($FilePath)){
+            require $FilePath;
+        }
     }
 
-    //执行方法
+    //添加钩子方法
+    public static function add($UnionData = [])
+    {
+        $List = Common::quickParameter($UnionData, 'list', '列表',true,NULL,true);
+        foreach ($List as $Key => $Val){
+            if(!isset($_SERVER['APIPHP']['Runtime']['core/Hook'][$Key])){
+                $_SERVER['APIPHP']['Runtime']['core/Hook'][$Key]=[];
+            }
+            $_SERVER['APIPHP']['Runtime']['core/Hook'][$Key]=array_merge($_SERVER['APIPHP']['Runtime']['core/Hook'][$Key],$Val);
+        }
+    }
+
+    //调用钩子
     public static function call($UnionData = [])
     {
-        $HookName = Common::quickParameter($UnionData, 'name', '名称');
-        $Func= Common::quickParameter($UnionData, 'function', '方法');
-        $Para= Common::quickParameter($UnionData, 'parameter', '参数',FALSE,[]);
-
-    }
-
-    //执行方法
-    public static function reg($UnionData = [])
-    {
-        $HookName = Common::quickParameter($UnionData, 'name', '名称');
-        $Path= Common::quickParameter($UnionData, 'path', '路径');
+        $Name = Common::quickParameter($UnionData, 'name', '名称', true, null, true);
+        $Para= Common::quickParameter($UnionData, 'parameter', '参数',false,[]);
+        $HookList=$_SERVER['APIPHP']['Runtime']['core/Hook'];
+        if(!empty($HookList[$Name])){
+            foreach ($HookList[$Name] as $Val){
+                $Func='plugin\\'.$Val;
+                if(!is_callable($Func)){
+                    Api::wrong(['level' => 'F', 'detail' => 'Error#M.5.0' . "\r\n\r\n @ " . $Name .' @ ' .$Func, 'code' => 'M.5.0']);
+                }
+                $HookReturn=call_user_func($Func,$Para);
+                if(is_array($HookReturn)){
+                    $Para = $HookReturn;
+                }
+            }
+        }
+        return $Para;
     }
 
     public static function __callStatic($Method, $Parameters)

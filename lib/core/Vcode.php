@@ -85,7 +85,6 @@ class Vcode
             header("Expires: -1");
             header('Last-Modified: ' . gmdate('D, d M Y 00:00:00', intval(_TIME)) . ' GMT');
             imagejpeg($NewImg);
-            imagedestroy($NewImg);
         } else {
             imagejpeg($NewImg);
             $ImgData = ob_get_contents();

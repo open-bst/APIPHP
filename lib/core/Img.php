@@ -51,46 +51,58 @@ class Img
     }
 
     //打开图片
-    private static function getImage($From, $DataType)
+    public static function get($UnionData = [])
     {
-        if ($DataType == 'path') {
-            if (!file_exists($From)) {
-                Api::wrong(['level' => 'F', 'detail' => 'Error#M.2.1', 'code' => 'M.2.1']);
-            }
-            $Exp = explode('.', $From);
-            $MIME = end($Exp);
-            if (strtolower($MIME) == 'wbmp') {
-                $MIME = 'vnd.wap.wbmp';
-            }
-            if (strtolower($MIME) == 'jpg') {
-                $MIME = 'jpeg';
-            }
-            self::mimeCheck(strtolower($MIME));
-            if ($MIME == 'vnd.wap.wbmp') {
-                $MIME = 'wbmp';
-            }
-
-            $ImgInfo = @getimagesize($From);
-
-            $ImgData = call_user_func('imagecreatefrom' . $MIME, $From);
+        $From = Common::quickParameter($UnionData, 'image', '源图片');
+        $DataType = strtolower(Common::quickParameter($UnionData, 'data_type', '资源类型', false, 'path'));
+        if ($DataType == 'resource') {
+            return $From;
         } else {
-            $ImgInfo = @getimagesizefromstring($From);
-            $ImgData = call_user_func('imagecreatefromstring', $From);
+            if ($DataType == 'path') {
+                if (!file_exists($From)) {
+                    Api::wrong(['level' => 'F', 'detail' => 'Error#M.2.1', 'code' => 'M.2.1']);
+                }
+                $Exp = explode('.', $From);
+                $MIME = end($Exp);
+                if (strtolower($MIME) == 'wbmp') {
+                    $MIME = 'vnd.wap.wbmp';
+                }
+                if (strtolower($MIME) == 'jpg') {
+                    $MIME = 'jpeg';
+                }
+                self::mimeCheck(strtolower($MIME));
+                if ($MIME == 'vnd.wap.wbmp') {
+                    $MIME = 'wbmp';
+                }
+
+                $ImgInfo = @getimagesize($From);
+
+                $ImgData = call_user_func('imagecreatefrom' . $MIME, $From);
+            } else {
+                $ImgInfo = @getimagesizefromstring($From);
+                $ImgData = imagecreatefromstring($From);
+            }
         }
 
         if (!$ImgInfo || $ImgData === false) {
             Api::wrong(['level' => 'F', 'detail' => 'Error#M.2.2', 'code' => 'M.2.2']);
         }
 
-        $Return = $ImgInfo;
-        $Return['Data'] = $ImgData;
-
-        return $Return;
+        return [
+            0=>$ImgInfo[0],
+            1=>$ImgInfo[0],
+            'data'=>$ImgData,
+        ];
     }
 
     //输出图片
-    private static function outputImage($ImgData, $To, $Quality, $MIME)
+    public static function output($UnionData = [])
     {
+        $ImgInfo = Common::quickParameter($UnionData, 'resource', '资源', true,null,true);
+        $To = Common::quickParameter($UnionData, 'to', '目标路径', false);
+        $Quality = Common::quickParameter($UnionData, 'quality', '质量', false, 75);
+        $MIME = strtolower(Common::quickParameter($UnionData, 'mime', '图片格式', false, 'jpeg'));
+
         if (empty($To)) {
             $To = null;
             header('Content-Type: image/' . $MIME);
@@ -115,7 +127,7 @@ class Img
         $OutPut = false;
 
         if (array_key_exists($MIME, ['jpeg' => '', 'png' => '', 'webp' => ''])) {
-            $OutPut = call_user_func('image' . $MIME, $ImgData, $To, $Quality);
+            $OutPut = call_user_func('image' . $MIME, $ImgInfo['data'], $To, $Quality);
         }
 
         if (array_key_exists(
@@ -125,7 +137,7 @@ class Img
             if ($MIME == 'vnd.wap.wbmp') {
                 $MIME = 'wbmp';
             }
-            $OutPut = call_user_func('image' . $MIME, $ImgData, $To);
+            $OutPut = call_user_func('image' . $MIME, $ImgInfo['data'], $To);
         }
 
         if (!$OutPut) {
@@ -149,6 +161,7 @@ class Img
         $WordMarginY = Common::quickParameter($UnionData, 'word_margin_y', '文字顶边距', false, 0);
         $Quality = Common::quickParameter($UnionData, 'quality', '质量', false, 75);
         $MIME = strtolower(Common::quickParameter($UnionData, 'mime', '图片格式', false, 'jpeg'));
+        $ReturnResource = strtolower(Common::quickParameter($UnionData, 'return_resource', '返回资源', false, false));
 
         if ($DataType == 'path') {
             $From = Common::diskPath($From);
@@ -159,7 +172,7 @@ class Img
         }
 
         $WordColorArray = ["red" => 80, "green" => 80, "blue" => 80];
-        $ImgInfo = self::getImage($From, $DataType);
+        $ImgInfo = self::get(['image'=>$From, 'data_type'=>$DataType]);
 
         if (empty($Width) && empty($Height)) {
             $NewWidth = round($ImgInfo[0] * $Scale);
@@ -180,7 +193,7 @@ class Img
         if (!$NewImg) {
             Api::wrong(['level' => 'F', 'detail' => 'Error#M.2.4', 'code' => 'M.2.4']);
         }
-        imagecopyresampled($NewImg, $ImgInfo['Data'], 0, 0, 0, 0, $NewWidth, $NewHeight, $ImgInfo[0], $ImgInfo[1]);
+        imagecopyresampled($NewImg, $ImgInfo['data'], 0, 0, 0, 0, $NewWidth, $NewHeight, $ImgInfo[0], $ImgInfo[1]);
         if (!empty($Word)) {
             if (empty($WordSize)) {
                 $WordSize = $NewHeight * 0.12;
@@ -208,10 +221,16 @@ class Img
             }
         }
 
-        self::outputImage($NewImg, $To, $Quality, $MIME);
+        if($ReturnResource){
+            return [
+                0=>$NewWidth,
+                1=>$NewHeight,
+                'data'=>$NewImg
+            ];
+        }
 
-        imagedestroy($ImgInfo['Data']);
-        imagedestroy($NewImg);
+
+        self::output($NewImg, $To, $Quality, $MIME);
     }
 
     //合并图片
@@ -226,6 +245,7 @@ class Img
         $Scale = Common::quickParameter($UnionData, 'scale', '缩放', false, 1.0);
         $Quality = Common::quickParameter($UnionData, 'quality', '质量', false, 75);
         $MIME = strtolower(Common::quickParameter($UnionData, 'mime', '图片类型', false, 'jpeg'));
+        $ReturnResource = strtolower(Common::quickParameter($UnionData, 'return_resource', '返回资源', false, false));
 
         if (!empty($To)) {
             $To = Common::diskPath($To);
@@ -239,12 +259,12 @@ class Img
         }
 
 
-        $BgImageInfo = self::getImage($Background, $DataType);
-        $FgImageInfo = self::getImage($Foreground, $DataType);
+        $BgImageInfo = self::get(['image'=>$Background, 'data_type'=>$DataType]);
+        $FgImageInfo = self::get(['image'=>$Foreground, 'data_type'=>$DataType]);
 
         imagecopyresampled(
-            $BgImageInfo['Data'],
-            $FgImageInfo['Data'],
+            $BgImageInfo['data'],
+            $FgImageInfo['data'],
             $ImageX,
             $ImageY,
             0,
@@ -255,10 +275,20 @@ class Img
             $FgImageInfo[1]
         );
 
-        self::outputImage($BgImageInfo['Data'], $To, $Quality, $MIME);
+        if($ReturnResource){
+            return [
+                0=>$BgImageInfo[0],
+                1=>$BgImageInfo[1],
+                'data'=>$BgImageInfo['data']
+            ];
+        }
 
-        imagedestroy($BgImageInfo['Data']);
-        imagedestroy($FgImageInfo['Data']);
+        self::output([
+            'resource'=>$BgImageInfo['data'],
+            'to'=>$To,
+            'quality'=>$Quality,
+            'mime'=>$MIME
+        ]);
     }
 
     public static function __callStatic($Method, $Parameters)

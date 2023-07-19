@@ -217,9 +217,9 @@ class Load
         }
 
         if (!empty($FileName)) {
-            $NewName = $Path . $FileName;
+            $NewName = $Path . '/' . $FileName;
         } else {
-            $NewName = $Path . intval(_TIME) . mt_rand(111, 999) . '-' . basename($Url);
+            $NewName = $Path . '/' . intval(_TIME) . mt_rand(111, 999) . '-' . basename($Url);
         }
 
         $Handle = curl_init();

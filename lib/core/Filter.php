@@ -16,7 +16,7 @@ class Filter
     //非空检查
     private static function emptyCheck($OpArray, $Value): bool
     {
-        if (isset($OpArray[0]) && strtoupper(
+        if (isset($OpArray[0]) && strtolower(
                 $OpArray[0]
             ) == 'true' && ($Value === '' || $Value === null || $Value === [])) {
             return false;
@@ -70,7 +70,7 @@ class Filter
         }
         foreach ($Field as $Key => $Val) {
             $TempOp = explode(',', $Val);
-            $TempData = false;
+            $TempData = null;
             if ($Mode == 'post' && isset($_POST[$Key])) {
                 $TempData = $_POST[$Key];
             } elseif ($Mode == 'get' && isset($_GET[$Key])) {
@@ -82,8 +82,8 @@ class Filter
                 }
             }
 
-            if ($TempData === false && !in_array($Key, $Optional)) {
-                return false;
+            if ($TempData === null && in_array($Key, $Optional)) {
+                return true;
             }
             if (!self::emptyCheck($TempOp, $TempData) || !self::lengthCheck($TempOp, $TempData) || !self::ruleCheck(
                     $TempOp,
@@ -100,8 +100,9 @@ class Filter
     {
         $Data = Common::quickParameter($UnionData, 'data', '数据');
         $Check = Common::quickParameter($UnionData, 'check', '校验');
+        $CheckOp = explode(',', $Check);
 
-        if (!self::emptyCheck($Check, $Data) || !self::lengthCheck($Check, $Data) || !self::ruleCheck($Check, $Data)) {
+        if (!self::emptyCheck($CheckOp, $Data) || !self::lengthCheck($CheckOp, $Data) || !self::ruleCheck($CheckOp, $Data)) {
             return false;
         }
         return true;

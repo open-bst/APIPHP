@@ -496,6 +496,8 @@ class Db
     public static function acid($UnionData = []): bool
     {
         $Option = Common::quickParameter($UnionData, 'option', '操作',true,null, true);
+        $DbName = Common::quickParameter($UnionData, 'db_name', '数据库', false, '');
+        self::connect($DbName);
 
         if ($Option == 'start') {
             try {

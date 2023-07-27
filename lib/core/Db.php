@@ -87,7 +87,8 @@ class Db
             'index' => ['index', '索引', false, null],
             'sql' => ['sql', 'sql', false, null],
             'bind' => ['bind', '绑定', false, []],
-            'dbName' => ['db_name', '数据库', false, '']
+            'dbName' => ['db_name', '数据库', false, ''],
+            'debug'=> ['debug', '调试', false, false]
         ];
 
         $ExtraParameters = [
@@ -130,19 +131,28 @@ class Db
                 if(!isset($Data[$Key])){
                     Api::wrong(['level' => 'F', 'detail' => 'Error#M.8.5' . "\r\n\r\n @ " . $Val, 'code' => 'M.8.5']);
                 }
-                self::$Stmts[$StmtKey]->bindValue(':' . $Tag . $Val, $Data[$Key]);
+                if(is_array($Data[$Key])){
+                    $BindData=json_encode($Data[$Key],JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                }
+                else{
+                    $BindData=$Data[$Key];
+                }
+                self::$Stmts[$StmtKey]->bindValue(':' . $Tag .($Tag=='_Where_'?$Key.'_':''). $Val, $BindData);
             }
         } else {
             foreach ($Data as $Key => $Val) {
-                self::$Stmts[$StmtKey]->bindValue(':' . $Tag . $Key, $Val);
+                self::$Stmts[$StmtKey]->bindValue(':' . $Key, $Val);
             }
         }
     }
 
     //执行预处理
-    private static function execBind($StmtKey, $PreSql, $Action = '')
+    private static function execBind($StmtKey, $PreSql, $Action,$Debug)
     {
         self::sqlLog($PreSql);
+        if($Debug){
+            return $PreSql;
+        }
 
         try {
             self::$Stmts[$StmtKey]->execute();
@@ -219,7 +229,7 @@ class Db
 
             if (!is_array($Para['condition']) || empty($Para['condition'][$Key])) {
                 $TempCo = ['=', 'AND'];
-                $WhereSql .= ' ' . $Val . ' ' . $TempCo[0] . ' :_Where_' . $Val;
+                $WhereSql .= ' ' . $Val . ' ' . $TempCo[0] . ' :_Where_'.$Key.'_'  . $Val;
             } elseif (!is_array($Para['condition'][$Key])) {
                 if (strpos($Para['condition'][$Key], ',') === false) {
                     $Para['condition'][$Key] = str_replace(' ', '', $Para['condition'][$Key]);
@@ -231,7 +241,7 @@ class Db
                         $TempCo[1] = 'AND';
                     }
                 }
-                $WhereSql .= ' ' . $Val . ' ' . $TempCo[0] . ' :_Where_' . $Val;
+                $WhereSql .= ' ' . $Val . ' ' . $TempCo[0] . ' :_Where_'.$Key.'_' . $Val;
             } else {
                 if (empty($Para['condition'][$Key][0])) {
                     $TempCo = ['=', 'AND'];
@@ -259,7 +269,7 @@ class Db
                     }
                 }
 
-                $WhereSql .= ' ' . $TempBeforeTag . $Val . ' ' . $TempCo[0] . ' :_Where_' . $Val . ' ' . $TempAfterTag;
+                $WhereSql .= ' ' . $TempBeforeTag . $Val . ' ' . $TempCo[0] . ' :_Where_'.$Key.'_'  . $Val . ' ' . $TempAfterTag;
             }
             if ($Key < (count($Para['field']) - 1)) {
                 $WhereSql .= ' ' . $TempCo[1];
@@ -325,7 +335,7 @@ class Db
         self::bindData($StmtKey, $Para['field'], $Para['value'], '_Where_');
         self::bindData($StmtKey, [], $Para['bind'], '', true);
 
-        return self::execBind($StmtKey, $QueryString, 'Fetch');
+        return self::execBind($StmtKey, $QueryString, 'Fetch',$Para['debug']);
     }
 
     //查询多条数据
@@ -341,7 +351,7 @@ class Db
         self::bindData($StmtKey, $Para['field'], $Para['value'], '_Where_');
         self::bindData($StmtKey, [], $Para['bind'], '', true);
 
-        return self::execBind($StmtKey, $QueryString, 'FetchAll');
+        return self::execBind($StmtKey, $QueryString, 'FetchAll',$Para['debug']);
     }
 
     //记录总数
@@ -362,7 +372,7 @@ class Db
         self::bindData($StmtKey, $Para['field'], $Para['value'], '_Where_');
         self::bindData($StmtKey, [], $Para['bind'], '', true);
 
-        $Return = self::execBind($StmtKey, $QueryString, 'FetchAll');
+        $Return = self::execBind($StmtKey, $QueryString, 'FetchAll',$Para['debug']);
 
         if (!empty($Para['groupBy'])) {
             return $Return;
@@ -389,7 +399,7 @@ class Db
         self::bindData($StmtKey, $Para['field'], $Para['value'], '_Where_');
         self::bindData($StmtKey, [], $Para['bind'], '', true);
 
-        $Return = self::execBind($StmtKey, $QueryString, 'Fetch');
+        $Return = self::execBind($StmtKey, $QueryString, 'Fetch',$Para['debug']);
         foreach ($Return as $Key => $Val) {
             if (empty($Val)) {
                 $Return[$Key] = 0;
@@ -421,7 +431,7 @@ class Db
         self::bindData($StmtKey, [], $Para['data'], '_Insert_', true);
         self::bindData($StmtKey, [], $Para['bind'], '', true);
 
-        return self::execBind($StmtKey, $QueryString, 'InsertId');
+        return self::execBind($StmtKey, $QueryString, 'InsertId',$Para['debug']);
     }
 
     //全表误操作防护
@@ -444,7 +454,7 @@ class Db
         self::bindData($StmtKey, $Para['field'], $Para['value'], '_Where_');
         self::bindData($StmtKey, [], $Para['bind'], '', true);
 
-        return self::execBind($StmtKey, $QueryString, $Para['rowCount'] ? 'RowCount' : '');
+        return self::execBind($StmtKey, $QueryString, $Para['rowCount'] ? 'RowCount' : '',$Para['debug']);
     }
 
     //更新数据
@@ -475,7 +485,7 @@ class Db
         self::bindData($StmtKey, [], $Para['data'], '_Update_', true);
         self::bindData($StmtKey, [], $Para['bind'], '', true);
 
-        return self::execBind($StmtKey, $QueryString, $Para['rowCount'] ? 'RowCount' : '');
+        return self::execBind($StmtKey, $QueryString, $Para['rowCount'] ? 'RowCount' : '',$Para['debug']);
     }
 
     //查询自定义语句
@@ -489,7 +499,7 @@ class Db
         $StmtKey = self::createBind($Sql, $DbName);
         self::bindData($StmtKey, [], $Bind, '', true);
 
-        return self::execBind($StmtKey, $Sql, $Fetch ? 'FetchAll' : '');
+        return self::execBind($StmtKey, $Sql, $Fetch ? 'FetchAll' : '',FALSE);
     }
 
     //事务

@@ -88,7 +88,7 @@ class Db
             'sql' => ['sql', 'sql', false, null],
             'bind' => ['bind', '绑定', false, []],
             'dbName' => ['db_name', '数据库', false, ''],
-            'debug'=> ['debug', '调试', false, false]
+            'debug' => ['debug', '调试', false, false]
         ];
 
         $ExtraParameters = [
@@ -128,29 +128,32 @@ class Db
     {
         if (!$Mix) {
             foreach ($Field as $Key => $Val) {
-                if(!isset($Data[$Key])){
+                if (!isset($Data[$Key])) {
                     Api::wrong(['level' => 'F', 'detail' => 'Error#M.8.5' . "\r\n\r\n @ " . $Val, 'code' => 'M.8.5']);
                 }
-                if(is_array($Data[$Key])){
-                    $BindData=json_encode($Data[$Key],JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                if (is_array($Data[$Key])) {
+                    $BindData = json_encode($Data[$Key], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                } else {
+                    $BindData = $Data[$Key];
                 }
-                else{
-                    $BindData=$Data[$Key];
+                $BindTag = $Tag;
+                if ($Tag == '_Where_') {
+                    $BindTag .= $Key . '_';
                 }
-                self::$Stmts[$StmtKey]->bindValue(':' . $Tag .($Tag=='_Where_'?$Key.'_':''). $Val, $BindData);
+                self::$Stmts[$StmtKey]->bindValue(':' . $BindTag . str_replace('.','',$Val), $BindData);
             }
         } else {
             foreach ($Data as $Key => $Val) {
-                self::$Stmts[$StmtKey]->bindValue(':' . $Key, $Val);
+                self::$Stmts[$StmtKey]->bindValue(':' . $Tag . $Key, $Val);
             }
         }
     }
 
     //执行预处理
-    private static function execBind($StmtKey, $PreSql, $Action,$Debug)
+    private static function execBind($StmtKey, $PreSql, $Action, $Debug)
     {
         self::sqlLog($PreSql);
-        if($Debug){
+        if ($Debug) {
             return $PreSql;
         }
 
@@ -215,7 +218,7 @@ class Db
     }
 
     //查询条件转SQL语句
-    private static function queryToSql($Para): string
+    private static function queryToSql($Para, $Sql = ''): string
     {
         if (empty($Para['condition'])) {
             $Para['condition'] = '=';
@@ -229,7 +232,7 @@ class Db
 
             if (!is_array($Para['condition']) || empty($Para['condition'][$Key])) {
                 $TempCo = ['=', 'AND'];
-                $WhereSql .= ' ' . $Val . ' ' . $TempCo[0] . ' :_Where_'.$Key.'_'  . $Val;
+                $WhereSql .= ' ' . $Val . ' ' . $TempCo[0] . ' :_Where_' . $Key . '_' . str_replace('.','',$Val);
             } elseif (!is_array($Para['condition'][$Key])) {
                 if (strpos($Para['condition'][$Key], ',') === false) {
                     $Para['condition'][$Key] = str_replace(' ', '', $Para['condition'][$Key]);
@@ -241,7 +244,7 @@ class Db
                         $TempCo[1] = 'AND';
                     }
                 }
-                $WhereSql .= ' ' . $Val . ' ' . $TempCo[0] . ' :_Where_'.$Key.'_' . $Val;
+                $WhereSql .= ' ' . $Val . ' ' . $TempCo[0] . ' :_Where_' . $Key . '_' . str_replace('.','',$Val);
             } else {
                 if (empty($Para['condition'][$Key][0])) {
                     $TempCo = ['=', 'AND'];
@@ -269,7 +272,7 @@ class Db
                     }
                 }
 
-                $WhereSql .= ' ' . $TempBeforeTag . $Val . ' ' . $TempCo[0] . ' :_Where_'.$Key.'_'  . $Val . ' ' . $TempAfterTag;
+                $WhereSql .= ' ' . $TempBeforeTag . $Val . ' ' . $TempCo[0] . ' :_Where_' . $Key . '_' . str_replace('.','',$Val) . ' ' . $TempAfterTag;
             }
             if ($Key < (count($Para['field']) - 1)) {
                 $WhereSql .= ' ' . $TempCo[1];
@@ -316,13 +319,13 @@ class Db
             $GroupBySql = '';
         }
 
-        return $WhereSql . $OrderSql . $LimitSql . $IndexSql . $GroupBySql . ' ' . $Para['sql'];
+        return $WhereSql . ' ' . $Para['sql'] . $OrderSql . $LimitSql . $IndexSql . $GroupBySql;
     }
 
     //查询一条数据
     public static function select($UnionData = [])
     {
-        $Para = self::parameterCheck($UnionData, ['fieldLimit'],'table');
+        $Para = self::parameterCheck($UnionData, ['fieldLimit'], 'table');
 
         $Para['limit'] = [1];
         $Para['groupBy'] = null;
@@ -335,13 +338,13 @@ class Db
         self::bindData($StmtKey, $Para['field'], $Para['value'], '_Where_');
         self::bindData($StmtKey, [], $Para['bind'], '', true);
 
-        return self::execBind($StmtKey, $QueryString, 'Fetch',$Para['debug']);
+        return self::execBind($StmtKey, $QueryString, 'Fetch', $Para['debug']);
     }
 
     //查询多条数据
     public static function selectMore($UnionData = [])
     {
-        $Para = self::parameterCheck($UnionData, ['fieldLimit', 'groupBy'],'table');
+        $Para = self::parameterCheck($UnionData, ['fieldLimit', 'groupBy'], 'table');
 
         $QueryString = 'SELECT ' . self::getFieldList($Para['fieldLimit'], '*') . ' FROM' . self::getTableList(
                 $Para['table']
@@ -351,13 +354,13 @@ class Db
         self::bindData($StmtKey, $Para['field'], $Para['value'], '_Where_');
         self::bindData($StmtKey, [], $Para['bind'], '', true);
 
-        return self::execBind($StmtKey, $QueryString, 'FetchAll',$Para['debug']);
+        return self::execBind($StmtKey, $QueryString, 'FetchAll', $Para['debug']);
     }
 
     //记录总数
     public static function total($UnionData = [])
     {
-        $Para = self::parameterCheck($UnionData, ['fieldLimit', 'groupBy'],'table');
+        $Para = self::parameterCheck($UnionData, ['fieldLimit', 'groupBy'], 'table');
 
         $Para['fieldLimit'] = '';
         if (!empty($Para['groupBy'])) {
@@ -372,7 +375,7 @@ class Db
         self::bindData($StmtKey, $Para['field'], $Para['value'], '_Where_');
         self::bindData($StmtKey, [], $Para['bind'], '', true);
 
-        $Return = self::execBind($StmtKey, $QueryString, 'FetchAll',$Para['debug']);
+        $Return = self::execBind($StmtKey, $QueryString, 'FetchAll', $Para['debug']);
 
         if (!empty($Para['groupBy'])) {
             return $Return;
@@ -384,7 +387,7 @@ class Db
     //求和
     public static function sum($UnionData = []): array
     {
-        $Para = self::parameterCheck($UnionData, ['sumField'],'table');
+        $Para = self::parameterCheck($UnionData, ['sumField'], 'table');
 
         $SumSql = '';
         foreach ($Para['sumField'] as $Key => $Val) {
@@ -399,7 +402,7 @@ class Db
         self::bindData($StmtKey, $Para['field'], $Para['value'], '_Where_');
         self::bindData($StmtKey, [], $Para['bind'], '', true);
 
-        $Return = self::execBind($StmtKey, $QueryString, 'Fetch',$Para['debug']);
+        $Return = self::execBind($StmtKey, $QueryString, 'Fetch', $Para['debug']);
         foreach ($Return as $Key => $Val) {
             if (empty($Val)) {
                 $Return[$Key] = 0;
@@ -431,12 +434,13 @@ class Db
         self::bindData($StmtKey, [], $Para['data'], '_Insert_', true);
         self::bindData($StmtKey, [], $Para['bind'], '', true);
 
-        return self::execBind($StmtKey, $QueryString, 'InsertId',$Para['debug']);
+        return self::execBind($StmtKey, $QueryString, 'InsertId', $Para['debug']);
     }
 
     //全表误操作防护
-    private static function tableChange($Unlock,$Field){
-        if(!$Unlock&&empty($Field)){
+    private static function tableChange($Unlock, $Field)
+    {
+        if (!$Unlock && empty($Field)) {
             Api::wrong(['level' => 'F', 'detail' => 'Error#M.8.4', 'code' => 'M.8.4']);
         }
     }
@@ -444,8 +448,8 @@ class Db
     //删除数据
     public static function delete($UnionData = [])
     {
-        $Para = self::parameterCheck($UnionData, ['rowCount','unlock'],'table');
-        self::tableChange($Para['unlock'],$Para['field']);
+        $Para = self::parameterCheck($UnionData, ['rowCount', 'unlock'], 'table');
+        self::tableChange($Para['unlock'], $Para['field']);
 
         $Para['groupBy'] = null;
         $QueryString = 'DELETE FROM' . self::getTableList($Para['table']) . self::queryToSql($Para);
@@ -454,14 +458,14 @@ class Db
         self::bindData($StmtKey, $Para['field'], $Para['value'], '_Where_');
         self::bindData($StmtKey, [], $Para['bind'], '', true);
 
-        return self::execBind($StmtKey, $QueryString, $Para['rowCount'] ? 'RowCount' : '',$Para['debug']);
+        return self::execBind($StmtKey, $QueryString, $Para['rowCount'] ? 'RowCount' : '', $Para['debug']);
     }
 
     //更新数据
     public static function update($UnionData = [])
     {
-        $Para = self::parameterCheck($UnionData, ['data', 'rowCount', 'autoOp','unlock'],'table');
-        self::tableChange($Para['unlock'],$Para['field']);
+        $Para = self::parameterCheck($UnionData, ['data', 'rowCount', 'autoOp', 'unlock'], 'table');
+        self::tableChange($Para['unlock'], $Para['field']);
 
         $DataSql = null;
         $AutoOpNumber = 0;
@@ -485,7 +489,7 @@ class Db
         self::bindData($StmtKey, [], $Para['data'], '_Update_', true);
         self::bindData($StmtKey, [], $Para['bind'], '', true);
 
-        return self::execBind($StmtKey, $QueryString, $Para['rowCount'] ? 'RowCount' : '',$Para['debug']);
+        return self::execBind($StmtKey, $QueryString, $Para['rowCount'] ? 'RowCount' : '', $Para['debug']);
     }
 
     //查询自定义语句
@@ -499,13 +503,13 @@ class Db
         $StmtKey = self::createBind($Sql, $DbName);
         self::bindData($StmtKey, [], $Bind, '', true);
 
-        return self::execBind($StmtKey, $Sql, $Fetch ? 'FetchAll' : '',FALSE);
+        return self::execBind($StmtKey, $Sql, $Fetch ? 'FetchAll' : '', false);
     }
 
     //事务
     public static function acid($UnionData = []): bool
     {
-        $Option = Common::quickParameter($UnionData, 'option', '操作',true,null, true);
+        $Option = Common::quickParameter($UnionData, 'option', '操作', true, null, true);
         $DbName = Common::quickParameter($UnionData, 'db_name', '数据库', false, '');
         self::connect($DbName);
 

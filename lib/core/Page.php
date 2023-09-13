@@ -42,11 +42,12 @@ class Page
         }
         if ($TotalPage < $NowPage) {
             $Result['info'] = [
-                'now' => $NowPage,
-                'total' => $TotalPage,
-                'number' => $TotalNumber,
-                'start' => $Start + 1,
-                'end' => $End
+                'nowPage' => $NowPage,
+                'totalPage' => $TotalPage,
+                'pageNumber'=>$Number,
+                'totalNumber' => $TotalNumber,
+                'startNumber' => $Start + 1,
+                'endNumber' => $End
             ];
             return $Result;
         }
@@ -61,11 +62,12 @@ class Page
 
         $Result['result'] = Db::selectMore($UnionData);
         $Result['info'] = [
-            'now' => $NowPage,
-            'total' => $TotalPage,
-            'number' => $TotalNumber,
-            'start' => $Start + 1,
-            'end' => $End
+            'nowPage' => $NowPage,
+            'totalPage' => $TotalPage,
+            'pageNumber'=>$Number,
+            'totalNumber' => $TotalNumber,
+            'startNumber' => $Start + 1,
+            'endNumber' => $End
         ];
         return $Result;
     }

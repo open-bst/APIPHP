@@ -94,7 +94,7 @@ class Tool
         $Headers = Common::quickParameter($UnionData, 'header', 'header', false, []);
         $Encode = Common::quickParameter($UnionData, 'encode', '编码', false, true);
         $Timeout = Common::quickParameter($UnionData, 'timeout', '超时时间', false, 15);
-        $Ssl = Common::quickParameter($UnionData, 'ssl', 'ssl', false, false);
+        $SSL = Common::quickParameter($UnionData, 'ssl', 'ssl', false, true);
 
         $Mode = strtoupper($Mode);
         if ($Mode != 'GET' && $Mode != 'POST' && $Mode != 'PUT' && $Mode != 'DELETE') {
@@ -117,6 +117,7 @@ class Tool
             }
         }
 
+        curl_setopt($Handle, CURLOPT_CUSTOMREQUEST, $Mode);
         curl_setopt($Handle, CURLOPT_URL, $Url);
         curl_setopt($Handle, CURLOPT_CONNECTTIMEOUT, 0);
         curl_setopt($Handle, CURLOPT_TIMEOUT, $Timeout);
@@ -128,8 +129,13 @@ class Tool
         curl_setopt($Handle, CURLOPT_MAXREDIRS, 20);
         curl_setopt($Handle, CURLOPT_RETURNTRANSFER, true);
 
-        curl_setopt($Handle, CURLOPT_SSL_VERIFYPEER, $Ssl);
-        curl_setopt($Handle, CURLOPT_SSL_VERIFYHOST, $Ssl);
+        curl_setopt($Handle, CURLOPT_SSL_VERIFYPEER, $SSL);
+        if($SSL){
+            curl_setopt($Handle, CURLOPT_SSL_VERIFYHOST, 2);
+        }
+        else{
+            curl_setopt($Handle, CURLOPT_SSL_VERIFYHOST, 0);
+        }
 
         if ($Mode != 'GET') {
             if ($Mode == 'POST') {
@@ -142,9 +148,6 @@ class Tool
                 }
             }
 
-            if ($Mode == 'PUT' || $Mode == 'DELETE') {
-                curl_setopt($Handle, CURLOPT_CUSTOMREQUEST, $Mode);
-            }
             if (is_array($Data)) {
                 foreach ($Data as $Key => $Val) {
                     $SendData[$Key] = $Val;

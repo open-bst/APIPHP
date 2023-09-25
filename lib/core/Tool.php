@@ -94,7 +94,7 @@ class Tool
         $Headers = Common::quickParameter($UnionData, 'header', 'header', false, []);
         $Encode = Common::quickParameter($UnionData, 'encode', '编码', false, true);
         $Timeout = Common::quickParameter($UnionData, 'timeout', '超时时间', false, 15);
-        $SSL = Common::quickParameter($UnionData, 'ssl', 'ssl', false, true);
+        $SSL = Common::quickParameter($UnionData, 'ssl', 'ssl', false, false);
 
         $Mode = strtoupper($Mode);
         if ($Mode != 'GET' && $Mode != 'POST' && $Mode != 'PUT' && $Mode != 'DELETE') {

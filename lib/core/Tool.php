@@ -74,11 +74,11 @@ class Tool
     {
         $Field = Common::quickParameter($UnionData, 'field', '字段', true, null, true);
         $ReturnArray = [];
-        foreach ($Field as $Val) {
-            $FieldName = 'HTTP_' . str_replace('-', '_', strtoupper($Val));
+        foreach ($Field as $V) {
+            $FieldName = 'HTTP_' . str_replace('-', '_', strtoupper($V));
 
             if (isset($_SERVER[$FieldName])) {
-                $ReturnArray[$Val] = $_SERVER[$FieldName];
+                $ReturnArray[$V] = $_SERVER[$FieldName];
             }
         }
         return $ReturnArray;
@@ -141,16 +141,16 @@ class Tool
             if ($Mode == 'POST') {
                 curl_setopt($Handle, CURLOPT_POST, true);
 
-                foreach ($File as $Key => $Val) {
-                    if (file_exists(Common::diskPath($Val))) {
-                        $SendData[$Key] = new CURLFile(Common::diskPath($Val));
+                foreach ($File as $K => $V) {
+                    if (file_exists(Common::diskPath($V))) {
+                        $SendData[$K] = new CURLFile(Common::diskPath($V));
                     }
                 }
             }
 
             if (is_array($Data)) {
-                foreach ($Data as $Key => $Val) {
-                    $SendData[$Key] = $Val;
+                foreach ($Data as $K => $V) {
+                    $SendData[$K] = $V;
                 }
             } else {
                 if ($Encode) {

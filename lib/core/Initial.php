@@ -16,7 +16,9 @@ class Initial
     public static function autoload($ClassName)
     {
         if (!file_exists(_ROOT . '/lib/' . str_replace(['\\', '//'], '/', $ClassName) . '.php')) {
-            Api::wrong(['level' => 'F', 'detail' => 'Error#C.0.5' . "\r\n\r\n @ " . $ClassName, 'code' => 'C.0.5']);
+            if(!$_SERVER['APIPHP']['Config']['core\Initial']['composer']){
+                Api::wrong(['level' => 'F', 'detail' => 'Error#C.0.5' . "\r\n\r\n @ " . $ClassName, 'code' => 'C.0.5']);
+            }
         } else {
             if (file_exists(_ROOT . '/config/' . str_replace(['\\', '//'], '/', $ClassName) . '.php')) {
                 require(_ROOT . '/config/' . str_replace(['\\', '//'], '/', $ClassName) . '.php');

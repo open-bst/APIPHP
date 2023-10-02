@@ -34,8 +34,8 @@ class Cache
             $HookPath=_ROOT.'/source';
             array_pop($PathArray);
             array_shift($PathArray);
-            foreach ($PathArray as $Val){
-                $HookPath.='/'.$Val;
+            foreach ($PathArray as $V){
+                $HookPath.='/'.$V;
                 $File=$HookPath.'/hook.apiphp';
                 if(file_exists($File)){
                     $List[]=$File;
@@ -49,9 +49,9 @@ class Cache
     private static function hookCode($Path){
         $List=self::hookList($Path);
         $Code='';
-        foreach ($List as $Val){
-            if(file_exists($Val)){
-                $HookFile= file_get_contents($Val);
+        foreach ($List as $V){
+            if(file_exists($V)){
+                $HookFile= file_get_contents($V);
                 if ($HookFile === false) {
                     Api::wrong(['level' => 'F', 'detail' => 'Error#M.11.0', 'code' => 'M.11.0']);
                 }
@@ -64,8 +64,8 @@ class Cache
     //获取钩子代码改动状态
     private static function hookChange($Path){
         $List=self::hookList($Path);
-        foreach ($List as $Val){
-            $HookFile=self::fileInfo($Val);
+        foreach ($List as $V){
+            $HookFile=self::fileInfo($V);
             if($HookFile['time'] + $_SERVER['APIPHP']['Config']['core\Cache']['expTime'] > _TIME){
                 return true;
             }

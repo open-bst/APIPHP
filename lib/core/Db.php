@@ -22,7 +22,7 @@ class Db
     private static $Stmts;
 
     //选择数据库
-    public static function choose($UnionData)
+    public static function choose($UnionData): void
     {
         $DbName = Common::quickParameter($UnionData, 'db_name', '数据库', true, null, true);
         if (!empty($DbName)) {
@@ -31,7 +31,7 @@ class Db
     }
 
     //连接数据库
-    private static function connect($DbName)
+    private static function connect($DbName): void
     {
         if (empty($DbName)) {
             $DbName = $_SERVER['APIPHP']['Config']['core\Db']['default'];
@@ -80,8 +80,8 @@ class Db
             'table' => ['table', '表', true, null],
             'field' => ['field', '字段', false, []],
             'value' => ['value', '值', false, []],
-            'condition' => ['condition', '条件', false, '='],
-            'order' => ['order', '顺序', false, null],
+            'condition' => ['condition', '条件', false, []],
+            'order' => ['order', '排序', false, null],
             'desc' => ['desc', '降序', false, false],
             'limit' => ['limit', '限制', false, null],
             'index' => ['index', '索引', false, null],
@@ -101,12 +101,12 @@ class Db
             'unlock' => ['unlock', '解锁', false, false]
         ];
 
-        foreach ($Extra as $Val) {
-            $Parameters[$Val] = $ExtraParameters[$Val];
+        foreach ($Extra as $V) {
+            $Parameters[$V] = $ExtraParameters[$V];
         }
 
-        foreach ($Parameters as $Key => $Val) {
-            $Result[$Key] = Common::quickParameter($UnionData, $Val[0], $Val[1], $Val[2], $Val[3], $Default == $Key);
+        foreach ($Parameters as $K => $V) {
+            $Result[$K] = Common::quickParameter($UnionData, $V[0], $V[1], $V[2], $V[3], $Default == $K);
         }
 
         return $Result;
@@ -124,27 +124,27 @@ class Db
     }
 
     //绑定参数
-    private static function bindData($StmtKey, $Field, $Data, $Tag = '', $Mix = false)
+    private static function bindData($StmtKey, $Field, $Data, $Tag = '', $Mix = false): void
     {
         if (!$Mix) {
-            foreach ($Field as $Key => $Val) {
-                if (!isset($Data[$Key])) {
-                    Api::wrong(['level' => 'F', 'detail' => 'Error#M.8.5' . "\r\n\r\n @ " . $Val, 'code' => 'M.8.5']);
+            foreach ($Field as $K => $V) {
+                if (!isset($Data[$K])) {
+                    Api::wrong(['level' => 'F', 'detail' => 'Error#M.8.5' . "\r\n\r\n @ " . $V, 'code' => 'M.8.5']);
                 }
-                if (is_array($Data[$Key])) {
-                    $BindData = json_encode($Data[$Key], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                if (is_array($Data[$K])) {
+                    $BindData = json_encode($Data[$K], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
                 } else {
-                    $BindData = $Data[$Key];
+                    $BindData = $Data[$K];
                 }
                 $BindTag = $Tag;
                 if ($Tag == '_Where_') {
-                    $BindTag .= $Key . '_';
+                    $BindTag .= $K . '_';
                 }
-                self::$Stmts[$StmtKey]->bindValue(':' . $BindTag . str_replace('.','',$Val), $BindData);
+                self::$Stmts[$StmtKey]->bindValue(':' . $BindTag . md5($V) , $BindData);
             }
         } else {
-            foreach ($Data as $Key => $Val) {
-                self::$Stmts[$StmtKey]->bindValue(':' . $Tag . $Key, $Val);
+            foreach ($Data as $K => $V) {
+                self::$Stmts[$StmtKey]->bindValue(':' . $Tag . $K, $V);
             }
         }
     }
@@ -154,7 +154,7 @@ class Db
     {
         self::sqlLog($PreSql);
         if ($Debug) {
-            return $PreSql;
+            Api::wrong(['level' => 'F', 'detail' => 'Error#M.8.6' . "\r\n\r\n @ " . $PreSql, 'code' => 'M.8.6']);
         }
 
         try {
@@ -179,24 +179,43 @@ class Db
     }
 
     //写入日志
-    private static function sqlLog($Sql)
+    private static function sqlLog($Sql): void
     {
         if ($_SERVER['APIPHP']['Config']['core\Db']['log']) {
             Log::add(['level' => 'debug', 'info' => '[SQL] ' . $Sql]);
         }
     }
 
-    //获取表列表
-    private static function getTableList($TableData)
+    //获取表别名
+    private static function getTableAlias($Name): string
     {
-        $TableList = '';
+        if(!empty($_SERVER['APIPHP']['Config']['core\Db']['tableAlias'][$Name])){
+            return $_SERVER['APIPHP']['Config']['core\Db']['tableAlias'][$Name];
+        }
+        else{
+            return $Name;
+        }
+    }
+
+    //获取表列表
+    private static function getTableList($TableData,$IndexRule): string
+    {
         if (is_array($TableData)) {
-            foreach ($TableData as $Val) {
-                $TableList .= ' ' . $Val . ' ,';
+            $TableList = '';
+            foreach ($TableData as $K => $V) {
+                $TableList .= ' `' . self::getTableAlias($V) . '`';
+                if(!empty($IndexRule[$K])){
+                    $TableList .=' '.$IndexRule[$K];
+                }
+                $TableList .=' ,';
             }
-            return substr($TableList, 0, -1);
+            return substr($TableList, 0, -2);
         } else {
-            return ' ' . $TableData;
+            $Return=' `' . self::getTableAlias($TableData).'`';
+            if(!empty($IndexRule)){
+                $Return.=' '.$IndexRule[0];
+            }
+            return $Return;
         }
     }
 
@@ -208,87 +227,72 @@ class Db
             if (is_string($FieldData)) {
                 return ' ' . $FieldData;
             } elseif (is_array($FieldData)) {
-                foreach ($FieldData as $Val) {
-                    $FieldList .= ' ' . $Val . ' ,';
+                foreach ($FieldData as $V) {
+                    $FieldList .= ' ' . self::splitField($V) . ' ,';
                 }
                 return substr($FieldList, 0, -1);
             }
         }
         return $Default;
     }
+    //拆分字段名
+    private static function splitField($Name): string
+    {
+        $Name=str_replace('\.','#',$Name);
+        $NameArr=explode('.', $Name);
+        $Return='`'.self::getTableAlias(str_replace('#','.',$NameArr[0])).'`';
+        if(!empty($NameArr[1])){
+            if(str_replace(' ','',$NameArr[1])!='*'){
+                $NameArr[1]='`'.str_replace('#','.',$NameArr[1]).'`';
+            }
+
+            $Return.='.'.$NameArr[1];
+        }
+        return $Return;
+    }
 
     //查询条件转SQL语句
-    private static function queryToSql($Para, $Sql = ''): string
+    private static function queryToSql($Para): string
     {
-        if (empty($Para['condition'])) {
-            $Para['condition'] = '=';
-        }
-
-        $WhereSql = '';
-        foreach ($Para['field'] as $Key => $Val) {
-            if ($WhereSql == '') {
-                $WhereSql = ' WHERE';
+        $WhereSql = ' WHERE';
+        foreach ($Para['field'] as $K => $V) {
+            $FieldCo = ['','=','AND',''];
+            if (!empty($Para['condition'][$K])) {
+                $TempCo = explode(',', $Para['condition'][$K]);
+                foreach ($TempCo as $CKey => $CVal){
+                    if ($FieldCo[0]==''&&str_contains($CVal, '(')) {
+                        $FieldCo[0] = $CVal;
+                        unset($TempCo[$CKey]);
+                    }
+                    if ($FieldCo[3]==''&&str_contains($CVal, ')')) {
+                        $FieldCo[3] = $CVal;
+                        unset($TempCo[$CKey]);
+                    }
+                    $TempCo=array_values($TempCo);
+                    if(!empty($TempCo[0])){
+                        $FieldCo[1] = $TempCo[0];
+                    }
+                    if(!empty($TempCo[1])){
+                        $FieldCo[2] = $TempCo[1];
+                    }
+                }
             }
-
-            if (!is_array($Para['condition']) || empty($Para['condition'][$Key])) {
-                $TempCo = ['=', 'AND'];
-                $WhereSql .= ' ' . $Val . ' ' . $TempCo[0] . ' :_Where_' . $Key . '_' . str_replace('.','',$Val);
-            } elseif (!is_array($Para['condition'][$Key])) {
-                if (strpos($Para['condition'][$Key], ',') === false) {
-                    $Para['condition'][$Key] = str_replace(' ', '', $Para['condition'][$Key]);
-                    $TempCo = [$Para['condition'][$Key], 'AND'];
-                } else {
-                    $Para['condition'][$Key] = str_replace(' ', '', $Para['condition'][$Key]);
-                    $TempCo = explode(',', $Para['condition'][$Key]);
-                    if (empty($TempCo[1])) {
-                        $TempCo[1] = 'AND';
-                    }
-                }
-                $WhereSql .= ' ' . $Val . ' ' . $TempCo[0] . ' :_Where_' . $Key . '_' . str_replace('.','',$Val);
-            } else {
-                if (empty($Para['condition'][$Key][0])) {
-                    $TempCo = ['=', 'AND'];
-                } elseif (strpos($Para['condition'][$Key][0], ',') === false) {
-                    $Para['condition'][$Key][0] = str_replace(' ', '', $Para['condition'][$Key][0]);
-                    $TempCo = [$Para['condition'][$Key][0], 'AND'];
-                } else {
-                    $Para['condition'][$Key][0] = str_replace(' ', '', $Para['condition'][$Key][0]);
-                    $TempCo = explode(',', $Para['condition'][$Key][0]);
-                    if (empty($TempCo[1])) {
-                        $TempCo[1] = 'AND';
-                    }
-                }
-                $TempBeforeTag = '';
-                $TempAfterTag = '';
-                if (!empty($Para['condition'][$Key][1])) {
-                    if (strpos($Para['condition'][$Key][1], ',') === false) {
-                        $Para['condition'][$Key][1] = str_replace(' ', '', $Para['condition'][$Key][1]);
-                        $TempBeforeTag = $Para['condition'][$Key][1];
-                    } else {
-                        $Para['condition'][$Key][1] = str_replace(' ', '', $Para['condition'][$Key][1]);
-                        $TempTag = explode(',', $Para['condition'][$Key][1]);
-                        $TempBeforeTag = $TempTag[0];
-                        $TempAfterTag = $TempTag[1];
-                    }
-                }
-
-                $WhereSql .= ' ' . $TempBeforeTag . $Val . ' ' . $TempCo[0] . ' :_Where_' . $Key . '_' . str_replace('.','',$Val) . ' ' . $TempAfterTag;
-            }
-            if ($Key < (count($Para['field']) - 1)) {
-                $WhereSql .= ' ' . $TempCo[1];
+            $WhereSql .= ' ' . $FieldCo[0] . self::splitField($V) . ' ' . $FieldCo[1] . ' :_Where_' . $K . '_' . md5($V) . ' ' . $FieldCo[3];
+            if ($K < (count($Para['field']) - 1)) {
+                $WhereSql .= ' ' . $FieldCo[2];
             }
         }
         if (is_string($Para['order'])) {
-            $OrderSql = ' ORDER BY ' . $Para['order'];
+            $OrderSql = ' ORDER BY ' . self::splitField($Para['order']);
             if ($Para['desc']) {
                 $OrderSql .= ' DESC';
             }
         } elseif (is_array($Para['order'])) {
             $OrderSql = ' ORDER BY ';
-            foreach ($Para['order'] as $Key => $Val) {
-                if (!empty($Val)) {
-                    $OrderSql .= $Val;
-                    if ($Para['desc'] || (isset($Para['desc'][$Key]) && $Para['desc'][$Key])) {
+            foreach ($Para['order'] as $K => $V) {
+                if (!empty($V)) {
+                    $OrderSql .= self::splitField($V);
+                    if ($Para['desc'] || (isset($Para['desc'][$K]) && $Para['desc'][$K])) {
                         $OrderSql .= ' DESC';
                     }
                     $OrderSql .= ',';
@@ -297,11 +301,6 @@ class Db
             $OrderSql = substr($OrderSql, 0, -1);
         } else {
             $OrderSql = '';
-        }
-        if (!empty($Para['index'])) {
-            $IndexSql = ' FORCE INDEX(' . $Para['index'] . ')';
-        } else {
-            $IndexSql = '';
         }
 
         $LimitSql = '';
@@ -319,7 +318,7 @@ class Db
             $GroupBySql = '';
         }
 
-        return $WhereSql . ' ' . $Para['sql'] . $OrderSql . $LimitSql . $IndexSql . $GroupBySql;
+        return $WhereSql . ' ' . $Para['sql'] . $OrderSql . $LimitSql . $GroupBySql;
     }
 
     //查询一条数据
@@ -330,9 +329,7 @@ class Db
         $Para['limit'] = [1];
         $Para['groupBy'] = null;
 
-        $QueryString = 'SELECT ' . self::getFieldList($Para['fieldLimit'], '*') . ' FROM' . self::getTableList(
-                $Para['table']
-            ) . self::queryToSql($Para);
+        $QueryString = 'SELECT ' . self::getFieldList($Para['fieldLimit'], '*') . ' FROM' . self::getTableList($Para['table'],$Para['index']) . self::queryToSql($Para);
 
         $StmtKey = self::createBind($QueryString, $Para['dbName']);
         self::bindData($StmtKey, $Para['field'], $Para['value'], '_Where_');
@@ -346,9 +343,7 @@ class Db
     {
         $Para = self::parameterCheck($UnionData, ['fieldLimit', 'groupBy'], 'table');
 
-        $QueryString = 'SELECT ' . self::getFieldList($Para['fieldLimit'], '*') . ' FROM' . self::getTableList(
-                $Para['table']
-            ) . self::queryToSql($Para);
+        $QueryString = 'SELECT ' . self::getFieldList($Para['fieldLimit'], '*') . ' FROM' . self::getTableList($Para['table'],$Para['index']) . self::queryToSql($Para);
 
         $StmtKey = self::createBind($QueryString, $Para['dbName']);
         self::bindData($StmtKey, $Para['field'], $Para['value'], '_Where_');
@@ -367,9 +362,7 @@ class Db
             $Para['fieldLimit'] .= self::getFieldList($Para['groupBy'], '') . ',';
         }
 
-        $QueryString = 'SELECT ' . $Para['fieldLimit'] . ' COUNT(*) AS Total FROM' . self::getTableList(
-                $Para['table']
-            ) . self::queryToSql($Para);
+        $QueryString = 'SELECT ' . $Para['fieldLimit'] . ' COUNT(*) AS Total FROM' . self::getTableList($Para['table'],$Para['index']) . self::queryToSql($Para);
 
         $StmtKey = self::createBind($QueryString, $Para['dbName']);
         self::bindData($StmtKey, $Para['field'], $Para['value'], '_Where_');
@@ -390,22 +383,22 @@ class Db
         $Para = self::parameterCheck($UnionData, ['sumField'], 'table');
 
         $SumSql = '';
-        foreach ($Para['sumField'] as $Key => $Val) {
-            $SumSql .= ' SUM(' . $Key . ')' . ' AS ' . $Val . ',';
+        foreach ($Para['sumField'] as $K => $V) {
+            $SumSql .= ' SUM(' . $K . ')' . ' AS ' . $V . ',';
         }
         $SumSql = substr($SumSql, 0, -1);
 
         $Para['groupBy'] = null;
-        $QueryString = 'SELECT' . $SumSql . ' FROM' . self::getTableList($Para['table']) . self::queryToSql($Para);
+        $QueryString = 'SELECT' . $SumSql . ' FROM' . self::getTableList($Para['table'],$Para['index']) . self::queryToSql($Para);
 
         $StmtKey = self::createBind($QueryString, $Para['dbName']);
         self::bindData($StmtKey, $Para['field'], $Para['value'], '_Where_');
         self::bindData($StmtKey, [], $Para['bind'], '', true);
 
         $Return = self::execBind($StmtKey, $QueryString, 'Fetch', $Para['debug']);
-        foreach ($Return as $Key => $Val) {
-            if (empty($Val)) {
-                $Return[$Key] = 0;
+        foreach ($Return as $K => $V) {
+            if (empty($V)) {
+                $Return[$K] = 0;
             }
         }
         return $Return;
@@ -419,16 +412,14 @@ class Db
         $InsertField = null;
         $InsertValue = null;
 
-        foreach ($Para['data'] as $Key => $Val) {
-            $InsertField .= $Key . ',';
-            $InsertValue .= ':_Insert_' . $Key . ',';
+        foreach ($Para['data'] as $K => $V) {
+            $InsertField .= $K . ',';
+            $InsertValue .= ':_Insert_' . $K . ',';
         }
         $InsertField = substr($InsertField, 0, -1);
         $InsertValue = substr($InsertValue, 0, -1);
 
-        $QueryString = 'INSERT INTO' . self::getTableList(
-                $Para['table']
-            ) . ' ( ' . $InsertField . ' ) VALUES ( ' . $InsertValue . ' )' . ' ' . $Para['sql'];
+        $QueryString = 'INSERT INTO' . self::getTableList($Para['table'],$Para['index']) . ' ( ' . $InsertField . ' ) VALUES ( ' . $InsertValue . ' )' . ' ' . $Para['sql'];
 
         $StmtKey = self::createBind($QueryString, $Para['dbName']);
         self::bindData($StmtKey, [], $Para['data'], '_Insert_', true);
@@ -438,7 +429,7 @@ class Db
     }
 
     //全表误操作防护
-    private static function tableChange($Unlock, $Field)
+    private static function tableChange($Unlock, $Field): void
     {
         if (!$Unlock && empty($Field)) {
             Api::wrong(['level' => 'F', 'detail' => 'Error#M.8.4', 'code' => 'M.8.4']);
@@ -452,7 +443,7 @@ class Db
         self::tableChange($Para['unlock'], $Para['field']);
 
         $Para['groupBy'] = null;
-        $QueryString = 'DELETE FROM' . self::getTableList($Para['table']) . self::queryToSql($Para);
+        $QueryString = 'DELETE FROM' . self::getTableList($Para['table'],$Para['index']) . self::queryToSql($Para);
 
         $StmtKey = self::createBind($QueryString, $Para['dbName']);
         self::bindData($StmtKey, $Para['field'], $Para['value'], '_Where_');
@@ -470,11 +461,11 @@ class Db
         $DataSql = null;
         $AutoOpNumber = 0;
 
-        foreach ($Para['data'] as $Key => $Val) {
+        foreach ($Para['data'] as $K => $V) {
             if (!empty($Para['autoOp'][$AutoOpNumber])) {
-                $DataSql .= $Key . ' = ' . $Key . ' ' . $Para['autoOp'][$AutoOpNumber];
+                $DataSql .= $K . ' = ' . $K . ' ' . $Para['autoOp'][$AutoOpNumber];
             } else {
-                $DataSql .= $Key . ' = :_Update_' . $Key;
+                $DataSql .= $K . ' = :_Update_' . $K;
             }
             $DataSql .= ',';
             $AutoOpNumber++;
@@ -482,7 +473,7 @@ class Db
         $DataSql = substr($DataSql, 0, -1);
 
         $Para['groupBy'] = null;
-        $QueryString = 'UPDATE' . self::getTableList($Para['table']) . ' SET ' . $DataSql . self::queryToSql($Para);
+        $QueryString = 'UPDATE' . self::getTableList($Para['table'],$Para['index']) . ' SET ' . $DataSql . self::queryToSql($Para);
 
         $StmtKey = self::createBind($QueryString, $Para['dbName']);
         self::bindData($StmtKey, $Para['field'], $Para['value'], '_Where_');

@@ -4,3 +4,6 @@
 /temp/log/*
 /temp/data/*
 /.idea/*
+/vendor/
+composer.lock
+Thumbs.db

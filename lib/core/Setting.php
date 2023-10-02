@@ -28,24 +28,24 @@ class Setting
     private static function arrayToStr($Array)
     {
         $TempText = '[' . "\r\n";
-        foreach ($Array as $Key => $Val) {
-            if (is_string($Key)) {
-                $TempText .= '\'' . str_replace("'", '"', $Key) . '\'=>';
+        foreach ($Array as $K => $V) {
+            if (is_string($K)) {
+                $TempText .= '\'' . str_replace("'", '"', $K) . '\'=>';
             } else {
-                $TempText .= $Key . '=>';
+                $TempText .= $K . '=>';
             }
-            if (is_string($Val)) {
-                $TempText .= '\'' . str_replace("'", '"', $Val) . '\',' . "\r\n";
-            } elseif (is_bool($Val)) {
-                if ($Val) {
+            if (is_string($V)) {
+                $TempText .= '\'' . str_replace("'", '"', $V) . '\',' . "\r\n";
+            } elseif (is_bool($V)) {
+                if ($V) {
                     $TempText .= 'true,' . "\r\n";
                 } else {
                     $TempText .= 'false,' . "\r\n";
                 }
-            } elseif (is_array($Val)) {
-                $TempText .= self::arrayToStr($Val) . ',' . "\r\n";
-            } elseif (is_int($Val) || is_float($Val)) {
-                $TempText .= $Val . ',' . "\r\n";
+            } elseif (is_array($V)) {
+                $TempText .= self::arrayToStr($V) . ',' . "\r\n";
+            } elseif (is_int($V) || is_float($V)) {
+                $TempText .= $V . ',' . "\r\n";
             } else {
                 $TempText .= '\'\',' . "\r\n";
             }
@@ -106,10 +106,10 @@ class Setting
             Api::wrong(['level' => 'F', 'detail' => 'Error#M.9.3', 'code' => 'M.9.3']);
         }
         $CodeText = '<?php' . "\r\n" . '$_SERVER[\'APIPHP_CONFIG\'][\'' . $Module . '\']=[' . "\r\n";
-        foreach ($_SERVER['APIPHP']['Config'][$Module] as $Key => $Val) {
+        foreach ($_SERVER['APIPHP']['Config'][$Module] as $K => $V) {
             $CodeText .= '    ';
-            if ($Key != $Name) {
-                $CodeText .= self::varToStr($Name, $Val);
+            if ($K != $Name) {
+                $CodeText .= self::varToStr($Name, $V);
             } else {
                 $CodeText .= self::varToStr($Name, $Value);
             }

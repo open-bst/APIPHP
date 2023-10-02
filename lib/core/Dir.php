@@ -25,31 +25,31 @@ class Dir
 
         clearstatcache();
         $Return = [];
-        foreach ($PathArray as $Val) {
+        foreach ($PathArray as $V) {
             $TempArray = [];
 
-            if (file_exists(Common::diskPath($Val))) {
-                if (is_readable(Common::diskPath($Val))) {
+            if (file_exists(Common::diskPath($V))) {
+                if (is_readable(Common::diskPath($V))) {
                     $TempArray['R'] = 'Y';
                 } else {
                     $TempArray['R'] = 'N';
                 }
 
-                if (is_writable(Common::diskPath($Val))) {
+                if (is_writable(Common::diskPath($V))) {
                     $TempArray['W'] = 'Y';
                 } else {
                     $TempArray['W'] = 'N';
                 }
 
-                if (is_dir(Common::diskPath($Val))) {
-                    if (is_executable(Common::diskPath($Val))) {
+                if (is_dir(Common::diskPath($V))) {
+                    if (is_executable(Common::diskPath($V))) {
                         $TempArray['Ex'] = 'Y';
                     } else {
                         $TempArray['Ex'] = 'N';
                     }
                 }
             }
-            $Return[$Val] = $TempArray;
+            $Return[$V] = $TempArray;
         }
         return $Return;
     }

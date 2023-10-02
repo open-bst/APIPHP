@@ -36,14 +36,14 @@ class Data
     //设置
     public static function set($UnionData = []): bool
     {
-        $Key = Common::quickParameter($UnionData, 'key', '键');
+        $K = Common::quickParameter($UnionData, 'key', '键');
         $Value = Common::quickParameter($UnionData, 'value', '值');
         $Time = Common::quickParameter($UnionData, 'time', '时间', false, 3600);
         $Prefix = Common::quickParameter($UnionData, 'prefix', '前缀', false, '');
 
         self::initial();
 
-        if ($Key == '') {
+        if ($K == '') {
             return false;
         }
         if ($Value == null) {
@@ -56,10 +56,10 @@ class Data
         }
         $Time = intval($Time);
         if (self::$Handle == 'file') {
-            return self::setByFile($Prefix, $Key, $Value, $Time);
+            return self::setByFile($Prefix, $K, $Value, $Time);
         }
         if (self::$Handle == 'redis') {
-            return self::setByRedis($Prefix, $Key, $Value, $Time);
+            return self::setByRedis($Prefix, $K, $Value, $Time);
         }
         return true;
     }
@@ -67,19 +67,19 @@ class Data
     //获取
     public static function get($UnionData = [])
     {
-        $Key = Common::quickParameter($UnionData, 'key', '键', true, null, true);
+        $K = Common::quickParameter($UnionData, 'key', '键', true, null, true);
         $Prefix = Common::quickParameter($UnionData, 'prefix', '前缀', false, '');
         $Callback = Common::quickParameter($UnionData, 'callback', '回调', false);
 
         self::initial();
 
-        if ($Key == '') {
+        if ($K == '') {
             return null;
         }
         if (self::$Handle == 'file') {
-            $Result = self::getByFile($Prefix, $Key);
+            $Result = self::getByFile($Prefix, $K);
         } elseif (self::$Handle == 'redis') {
-            $Result = self::getByRedis($Prefix, $Key);
+            $Result = self::getByRedis($Prefix, $K);
         } else {
             return null;
         }
@@ -104,9 +104,9 @@ class Data
     }
 
     //获取文件缓存路径
-    private static function getFilePath($Prefix, $Key, $Mkdir = false)
+    private static function getFilePath($Prefix, $K, $Mkdir = false)
     {
-        $MD5 = md5($Key);
+        $MD5 = md5($K);
         $Path = _ROOT . '/temp/data/' . $Prefix;
         $Level = intval($_SERVER['APIPHP']['Config']['core\Data']['connect']['file']['level']);
         if ($_SERVER['APIPHP']['Config']['core\Data']['connect']['file']['level'] < 1) {
@@ -134,13 +134,13 @@ class Data
     }
 
     //设置文件緩存
-    private static function setByFile($Prefix, $Key, $Value, $Time): bool
+    private static function setByFile($Prefix, $K, $Value, $Time): bool
     {
         if ($Time < 1) {
-            return self::deleteByFile($Key, $Prefix);
+            return self::deleteByFile($K, $Prefix);
         }
         $Cache = intval(_TIME) + $Time . "\r\n" . self::varToStr($Value);
-        $FileHandle = fopen(self::getFilePath($Prefix, $Key, true), 'w');
+        $FileHandle = fopen(self::getFilePath($Prefix, $K, true), 'w');
         if (!$FileHandle) {
             Api::wrong(['level' => 'F', 'detail' => 'Error#M.12.0', 'code' => 'M.12.0']);
         }
@@ -150,10 +150,10 @@ class Data
     }
 
     //删除文件緩存
-    private static function deleteByFile($Key, $Prefix, $Path = ''): bool
+    private static function deleteByFile($K, $Prefix, $Path = ''): bool
     {
         if ($Path == '') {
-            $Path = self::getFilePath($Prefix, $Key);
+            $Path = self::getFilePath($Prefix, $K);
         }
         if (file_exists($Path)) {
             $Result = unlink($Path);
@@ -164,9 +164,9 @@ class Data
     }
 
     //获取文件缓存
-    private static function getByFile($Prefix, $Key)
+    private static function getByFile($Prefix, $K)
     {
-        $FilePath = self::getFilePath($Prefix, $Key);
+        $FilePath = self::getFilePath($Prefix, $K);
         if (!file_exists($FilePath)) {
             return null;
         }
@@ -177,7 +177,7 @@ class Data
         $ExpTime = intval(strtok($Cache, "\r\n"));
         if ($ExpTime <= 0 || $ExpTime < intval(_TIME)) {
             if (mt_rand(1, $_SERVER['APIPHP']['Config']['core\Data']['connect']['file']['clean']) == 1) {
-                self::deleteByFile($Key, $Prefix, $FilePath);
+                self::deleteByFile($K, $Prefix, $FilePath);
             }
             return null;
         }
@@ -210,9 +210,9 @@ class Data
     }
 
     //设置Redis緩存
-    private static function setByRedis($Prefix, $Key, $Value, $Time): bool
+    private static function setByRedis($Prefix, $K, $Value, $Time): bool
     {
-        $MD5 = md5($Key);
+        $MD5 = md5($K);
         if ($Prefix != '') {
             $Prefix .= '_';
         }
@@ -227,9 +227,9 @@ class Data
     }
 
     //获取Redis缓存
-    private static function getByRedis($Prefix, $Key)
+    private static function getByRedis($Prefix, $K)
     {
-        $MD5 = md5($Key);
+        $MD5 = md5($K);
         if ($Prefix != '') {
             $Prefix .= '_';
         }

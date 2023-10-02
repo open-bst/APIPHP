@@ -25,5 +25,9 @@ $_SERVER['APIPHP']['Config']['core\Db']=[
 		]
 	],
 
-    'default'=>'default'
+    'default'=>'default',
+
+    'tableAlias'=>[
+        'aliasName'=>'tableName'
+    ]
 ];

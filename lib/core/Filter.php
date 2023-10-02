@@ -68,21 +68,21 @@ class Filter
         if ($Mode != 'get' && $Mode != 'post' && $Mode != 'header') {
             Api::wrong(['level' => 'F', 'detail' => 'Error#M.7.0' . "\r\n\r\n @ " . $Mode, 'code' => 'M.7.0']);
         }
-        foreach ($Field as $Key => $Val) {
-            $TempOp = explode(',', $Val);
+        foreach ($Field as $K => $V) {
+            $TempOp = explode(',', $V);
             $TempData = null;
-            if ($Mode == 'post' && isset($_POST[$Key])) {
-                $TempData = $_POST[$Key];
-            } elseif ($Mode == 'get' && isset($_GET[$Key])) {
-                $TempData = $_GET[$Key];
+            if ($Mode == 'post' && isset($_POST[$K])) {
+                $TempData = $_POST[$K];
+            } elseif ($Mode == 'get' && isset($_GET[$K])) {
+                $TempData = $_GET[$K];
             } elseif ($Mode == 'header') {
-                $KeyName = 'HTTP_' . str_replace('-', '_', strtoupper($Key));
+                $KeyName = 'HTTP_' . str_replace('-', '_', strtoupper($K));
                 if (isset($_SERVER[$KeyName])) {
                     $TempData = $_SERVER[$KeyName];
                 }
             }
 
-            if ($TempData === null && in_array($Key, $Optional)) {
+            if ($TempData === null && in_array($K, $Optional)) {
                 return true;
             }
             if (!self::emptyCheck($TempOp, $TempData) || !self::lengthCheck($TempOp, $TempData) || !self::ruleCheck(

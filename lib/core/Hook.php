@@ -27,11 +27,11 @@ class Hook
     public static function add($UnionData = [])
     {
         $List = Common::quickParameter($UnionData, 'list', '列表',true,NULL,true);
-        foreach ($List as $Key => $Val){
-            if(!isset($_SERVER['APIPHP']['Runtime']['core/Hook'][$Key])){
-                $_SERVER['APIPHP']['Runtime']['core/Hook'][$Key]=[];
+        foreach ($List as $K => $V){
+            if(!isset($_SERVER['APIPHP']['Runtime']['core/Hook'][$K])){
+                $_SERVER['APIPHP']['Runtime']['core/Hook'][$K]=[];
             }
-            $_SERVER['APIPHP']['Runtime']['core/Hook'][$Key]=array_merge($_SERVER['APIPHP']['Runtime']['core/Hook'][$Key],$Val);
+            $_SERVER['APIPHP']['Runtime']['core/Hook'][$K]=array_merge($_SERVER['APIPHP']['Runtime']['core/Hook'][$K],$V);
         }
     }
 
@@ -42,8 +42,8 @@ class Hook
         $Para= Common::quickParameter($UnionData, 'parameter', '参数',false,[]);
         $HookList=$_SERVER['APIPHP']['Runtime']['core/Hook'];
         if(!empty($HookList[$Name])){
-            foreach ($HookList[$Name] as $Val){
-                $Func='plugin\\'.$Val;
+            foreach ($HookList[$Name] as $V){
+                $Func='plugin\\'.$V;
                 if(!is_callable($Func)){
                     Api::wrong(['level' => 'F', 'detail' => 'Error#M.5.0' . "\r\n\r\n @ " . $Name .' @ ' .$Func, 'code' => 'M.5.0']);
                 }

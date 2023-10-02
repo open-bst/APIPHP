@@ -1,0 +1,33 @@
+{
+    "name": "open-bst/apiphp",
+	"description": "a high-performance PHP development framework for APIs",
+	"keywords": [
+        "framework",
+        "apiphp",
+        "php"
+    ],
+    "homepage": "https://apiphp.com/",
+	"license": "Apache-2.0",
+	"authors": [
+        {
+            "name": "userofjack",
+            "email": "tech@bux.cn"
+        }        
+    ],
+	"require": {
+        "php": ">=8.0.0",
+        "ext-json": "*",
+        "ext-mbstring": "*"
+	},
+	"autoload": {
+        "psr-4": {
+            "core\\": "lib/core/",
+			"plugin\\":"lib/plugin/"
+        }
+    },
+	"minimum-stability": "dev",
+	"prefer-stable": true,
+	"config": {
+        "sort-packages": true
+    }
+}

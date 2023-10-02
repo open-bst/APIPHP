@@ -73,15 +73,15 @@ class Ip
         $Str = preg_replace('/[^\d.\-*,&]/', '', $Str);
         $FirstStep = explode('&', $Str);
         $SecondStep = [];
-        foreach ($FirstStep as $Key => $Val) {
-            if (!empty($Val)) {
-                $SecondStep[$Key] = explode(',', $Val);
-                if (isset($SecondStep[$Key][1])) {
-                    $SecondStep[$Key][2] = $SecondStep[$Key][1];
-                    $TempArray = explode('-', $SecondStep[$Key][0]);
+        foreach ($FirstStep as $K => $V) {
+            if (!empty($V)) {
+                $SecondStep[$K] = explode(',', $V);
+                if (isset($SecondStep[$K][1])) {
+                    $SecondStep[$K][2] = $SecondStep[$K][1];
+                    $TempArray = explode('-', $SecondStep[$K][0]);
                     if (isset($TempArray[1])) {
-                        $SecondStep[$Key][0] = $TempArray[0];
-                        $SecondStep[$Key][1] = $TempArray[1];
+                        $SecondStep[$K][0] = $TempArray[0];
+                        $SecondStep[$K][1] = $TempArray[1];
                     }
                 }
             }
@@ -93,18 +93,18 @@ class Ip
     private static function arrayToText($Array): string
     {
         $Return = '';
-        foreach ($Array as $Val) {
-            if (isset($Val[0])) {
-                if (!isset($Val[1])) {
-                    $Val[1] = $Val[0];
+        foreach ($Array as $V) {
+            if (isset($V[0])) {
+                if (!isset($V[1])) {
+                    $V[1] = $V[0];
                 }
-                if (!isset($Val[2])) {
-                    $Val[2] = '';
+                if (!isset($V[2])) {
+                    $V[2] = '';
                 }
-                if ($Val[0] > $Val[1]) {
-                    $Return .= $Val[1] . '-' . $Val[0] . ',' . $Val[2] . '&';
+                if ($V[0] > $V[1]) {
+                    $Return .= $V[1] . '-' . $V[0] . ',' . $V[2] . '&';
                 } else {
-                    $Return .= $Val[0] . '-' . $Val[1] . ',' . $Val[2] . '&';
+                    $Return .= $V[0] . '-' . $V[1] . ',' . $V[2] . '&';
                 }
             }
         }
@@ -119,12 +119,12 @@ class Ip
         } else {
             $ListArray = self::$WhiteList;
         }
-        foreach ($ListArray as $Key => $Val) {
-            if ($StartIPNumber == $Val[0] && $EndIPNumber == $Val[1]) {
+        foreach ($ListArray as $K => $V) {
+            if ($StartIPNumber == $V[0] && $EndIPNumber == $V[1]) {
                 if (strtolower($Type) == 'b') {
-                    unset(self::$BlackList[$Key]);
+                    unset(self::$BlackList[$K]);
                 } else {
-                    unset(self::$WhiteList[$Key]);
+                    unset(self::$WhiteList[$K]);
                 }
             }
         }
@@ -246,11 +246,11 @@ class Ip
         } else {
             $ListArray = self::$WhiteList;
         }
-        foreach ($ListArray as $Val) {
+        foreach ($ListArray as $V) {
             $Return[] = [
-                self::transform($Val[0]),
-                self::transform($Val[1]),
-                $Val[2]
+                self::transform($V[0]),
+                self::transform($V[1]),
+                $V[2]
             ];
         }
         return $Return;
@@ -273,8 +273,8 @@ class Ip
         } else {
             $ListArray = self::$WhiteList;
         }
-        foreach ($ListArray as $Val) {
-            if (($IPNumber == $Val[0] || ($IPNumber > $Val[0] && $IPNumber < $Val[1])) && (_TIME <= $Val[2] || empty($Val[2]))) {
+        foreach ($ListArray as $V) {
+            if (($IPNumber == $V[0] || ($IPNumber > $V[0] && $IPNumber < $V[1])) && (_TIME <= $V[2] || empty($V[2]))) {
                 return true;
             }
         }
@@ -298,16 +298,16 @@ class Ip
             }
         } else {
             if (strtolower($Type) == 'b' || empty($Type)) {
-                foreach (self::$BlackList as $Key => $Val) {
-                    if (!empty($Val[2]) && intval($Val[2]) < _TIME) {
-                        unset(self::$BlackList[$Key]);
+                foreach (self::$BlackList as $K => $V) {
+                    if (!empty($V[2]) && intval($V[2]) < _TIME) {
+                        unset(self::$BlackList[$K]);
                     }
                 }
             }
             if (strtolower($Type) == 'w' || empty($Type)) {
-                foreach (self::$WhiteList as $Key => $Val) {
-                    if (!empty($Val[2]) && intval($Val[2]) < _TIME) {
-                        unset(self::$WhiteList[$Key]);
+                foreach (self::$WhiteList as $K => $V) {
+                    if (!empty($V[2]) && intval($V[2]) < _TIME) {
+                        unset(self::$WhiteList[$K]);
                     }
                 }
             }

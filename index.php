@@ -1,7 +1,7 @@
 <?php
 
-use core\Api;
-use core\Cache;
+use core\Hook;
+use core\Initial;
 use core\Log;
 
 /*
@@ -28,13 +28,16 @@ date_default_timezone_set($_SERVER['APIPHP']['Config']['core\Initial']['timeZone
 define('_DEBUG', $_SERVER['APIPHP']['Config']['core\Initial']['debug']);
 register_shutdown_function(['core\Initial', 'fatalErr']);
 set_error_handler(['core\Initial', 'sysErr'], E_ALL | E_STRICT);
-spl_autoload_register(['core\Initial', 'autoload']);
+if($_SERVER['APIPHP']['Config']['core\Initial']['composer']){
+    require 'vendor/autoload.php';
+}
+spl_autoload_register(['core\Initial', 'autoload'],true,true);
 
-\core\Hook::initial();
+Hook::initial();
 
-\core\Initial::debug();
+Initial::debug();
 ob_start();
-\core\Initial::route();
+Initial::route();
 
 
 if (!empty($_SERVER['APIPHP']['Log'])) {

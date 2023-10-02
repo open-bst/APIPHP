@@ -52,8 +52,8 @@ class Load
         $Suffix = strtolower(end($Exp));
 
         $TypeInfo = explode(',', $TypeInfo);
-        foreach ($TypeInfo as $Key => $Val) {
-            $TypeInfo[$Key] = strtoupper($Val);
+        foreach ($TypeInfo as $K => $V) {
+            $TypeInfo[$K] = strtoupper($V);
         }
         if (!in_array(strtoupper($Suffix), $TypeInfo)) {
             if (!$IgnoreErrorInfo) {
@@ -102,8 +102,8 @@ class Load
         $Path = Common::diskPath($Path);
         $Return = [];
         if (!empty($FieldCheck) && is_array($FieldCheck)) {
-            foreach ($FieldCheck as $Val) {
-                $TempOp = explode(',', $Val);
+            foreach ($FieldCheck as $V) {
+                $TempOp = explode(',', $V);
                 $TempField = str_replace('[]', '', $TempOp[0]);
                 if ((!isset($_FILES[$TempField])) || (isset($TempOp[1]) && strtoupper(
                             $TempOp[1]

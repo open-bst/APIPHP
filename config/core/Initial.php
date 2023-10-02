@@ -17,5 +17,7 @@ $_SERVER['APIPHP']['Config']['core\Initial']=[
 	//时区
 	'timeZone'=>'Asia/Shanghai',
     //404处理
-    'pageNotFound'=>''
+    'pageNotFound'=>'',
+    //Composer支持
+    'composer'=>false
 ];

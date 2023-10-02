@@ -20,8 +20,8 @@ class Api
 
         $Style = $_SERVER['APIPHP']['Config']['core\Api']['template'];
 
-        foreach ($Content as $Key => $Val) {
-            $Style[$Key] = $Val;
+        foreach ($Content as $K => $V) {
+            $Style[$K] = $V;
         }
 
         $Respond = json_encode($Style);
@@ -48,8 +48,8 @@ class Api
 
         $Config = $_SERVER['APIPHP']['Config']['core\Api'];
 
-        foreach ($Config['wrong']['ignore'] as $Val) {
-            if (strstr($Detail, $Val)) {
+        foreach ($Config['wrong']['ignore'] as $V) {
+            if (strstr($Detail, $V)) {
                 return true;
             }
         }
@@ -77,40 +77,40 @@ class Api
 
         if ($Stack || $WrongInfo['level'] == 'script' || $WrongInfo['level'] == 'framework') {
             $StackArray = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-            foreach ($StackArray as $Key => $Val) {
+            foreach ($StackArray as $K => $V) {
                 $StackInfo = ' ';
-                if (isset($Val['class'])) {
-                    $StackInfo .= $Val['class'] . $Val['type'];
+                if (isset($V['class'])) {
+                    $StackInfo .= $V['class'] . $V['type'];
                 }
-                if (isset($Val['function'])) {
-                    if ($Val['function'] == '{closure}') {
+                if (isset($V['function'])) {
+                    if ($V['function'] == '{closure}') {
                         $StackInfo .= '{closure}';
                     } else {
-                        $StackInfo .= $Val['function'] . '()';
+                        $StackInfo .= $V['function'] . '()';
                     }
                 }
-                if (isset($Val['file']) && isset($Val['line'])) {
-                    $StackInfo .= ' at [' . str_replace('\\', '/', $Val['file']) . ':' . $Val['line'] . '].';
+                if (isset($V['file']) && isset($V['line'])) {
+                    $StackInfo .= ' at [' . str_replace('\\', '/', $V['file']) . ':' . $V['line'] . '].';
                 }
-                $WrongInfo['stack']['#' . $Key] = $StackInfo;
+                $WrongInfo['stack']['#' . $K] = $StackInfo;
             }
         }
 
 
         if (_DEBUG || stristr($Config['wrong']['respond'], $Level) !== false) {
-            foreach ($Config['wrong']['style'] as $Key => $Val) {
-                $Config['wrong']['style'][$Key] = str_replace(['{code}', '{info}', '{time}'],
+            foreach ($Config['wrong']['style'] as $K => $V) {
+                $Config['wrong']['style'][$K] = str_replace(['{code}', '{info}', '{time}'],
                     [$Code, $WrongInfo['detail'], $WrongInfo['time']],
-                    $Val);
-                if ($Val == '{stack}') {
-                    $Config['wrong']['style'][$Key] = $WrongInfo['stack'];
+                    $V);
+                if ($V == '{stack}') {
+                    $Config['wrong']['style'][$K] = $WrongInfo['stack'];
                 }
             }
         } else {
-            foreach ($Config['wrong']['style'] as $Key => $Val) {
-                $Config['wrong']['style'][$Key] = str_replace(['{code}', '{info}', '{time}'],
+            foreach ($Config['wrong']['style'] as $K => $V) {
+                $Config['wrong']['style'][$K] = str_replace(['{code}', '{info}', '{time}'],
                     ['M.4.12', 'Error#M.4.12', $WrongInfo['time']],
-                    $Val);
+                    $V);
             }
         }
         self::respond(['content' => $Config['wrong']['style'], 'http' => $HttpCode]);
@@ -118,8 +118,8 @@ class Api
         if (stristr($Config['wrong']['log'], $Level) !== false && $Log) {
             $WrongLog = '[' . $WrongInfo['level'] . '] ' . $WrongInfo['detail'];
 
-            foreach ($WrongInfo['stack'] as $Key => $Val) {
-                $WrongLog .= "\r\n    " . $Key . ' ' . $Val;
+            foreach ($WrongInfo['stack'] as $K => $V) {
+                $WrongLog .= "\r\n    " . $K . ' ' . $V;
             }
 
             $WrongLog .= "\r\n    " . 'Occurred on ' . $WrongInfo['time'];

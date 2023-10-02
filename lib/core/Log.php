@@ -103,9 +103,9 @@ class Log
             return false;
         }
 
-        foreach ($_SERVER['APIPHP']['Log'] as $Val) {
-            if ($Val['Level'] >= $ConfigLevel) {
-                $Content .= '[' . $Val['LevelName'] . '] ' . $Val['Content'] . "\r\n<" . $Val['Time'] . "s>\r\n";
+        foreach ($_SERVER['APIPHP']['Log'] as $V) {
+            if ($V['Level'] >= $ConfigLevel) {
+                $Content .= '[' . $V['LevelName'] . '] ' . $V['Content'] . "\r\n<" . $V['Time'] . "s>\r\n";
             }
         }
 

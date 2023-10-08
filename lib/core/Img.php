@@ -229,8 +229,13 @@ class Img
             ];
         }
 
+        self::output([
+            'resource'=>$NewImg,
+            'to'=>$To,
+            'quality'=>$Quality,
+            'mime'=>$MIME
+        ]);
 
-        self::output($NewImg, $To, $Quality, $MIME);
     }
 
     //合并图片

@@ -41,35 +41,17 @@ class Initial
         if (error_reporting() == 0) {
             return true;
         }
-        switch ($ErrNo) {
-            case E_WARNING:
-                $PSE = 'PHP Warning: ';
-                break;
-            case E_NOTICE:
-                $PSE = 'PHP Notice: ';
-                break;
-            case E_DEPRECATED:
-                $PSE = 'PHP Deprecated: ';
-                break;
-            case E_USER_ERROR:
-                $PSE = 'User Error: ';
-                break;
-            case E_USER_WARNING:
-                $PSE = 'User Warning: ';
-                break;
-            case E_USER_NOTICE:
-                $PSE = 'User Notice: ';
-                break;
-            case E_USER_DEPRECATED:
-                $PSE = 'User Deprecated: ';
-                break;
-            case E_STRICT:
-                $PSE = 'PHP Strict: ';
-                break;
-            default:
-                $PSE = 'Unknown error: ';
-                break;
-        }
+        $PSE = match ($ErrNo) {
+            E_WARNING => 'PHP Warning: ',
+            E_NOTICE => 'PHP Notice: ',
+            E_DEPRECATED => 'PHP Deprecated: ',
+            E_USER_ERROR => 'User Error: ',
+            E_USER_WARNING => 'User Warning: ',
+            E_USER_NOTICE => 'User Notice: ',
+            E_USER_DEPRECATED => 'User Deprecated: ',
+            E_STRICT => 'PHP Strict: ',
+            default => 'Unknown error: ',
+        };
 
         $PSE .= $ErrMsg . ' in ' . str_replace('\\', '/', $ErrFile) . ' on ' . $ErrLine;
         Api::wrong(['level' => 'S', 'detail' => 'Error#C.0.2 @ ' . $PSE, 'code' => 'C.0.2']);
@@ -101,6 +83,14 @@ class Initial
         } else {
             $_SERVER['APIPHP']['URI'] = $_SERVER['APIPHP']['Option']['path'];
         }
+        $_SERVER['APIPHP']['URI']=Hook::call(
+            [
+                'name' => 'apiphp_initial_route',
+                'parameter' => [
+                    'uri' => $_SERVER['APIPHP']['URI'],
+                ]
+            ]
+        )['uri'];
         define('_URI', $_SERVER['APIPHP']['URI']);
         Cache::compile(['path' => _URI]);
 

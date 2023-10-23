@@ -59,7 +59,6 @@ class Page
         }
 
         $UnionData['limit'] = $Limit;
-
         $Result['result'] = Db::selectMore($UnionData);
         $Result['info'] = [
             'nowPage' => $NowPage,

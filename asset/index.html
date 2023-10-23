@@ -37,27 +37,32 @@
             </div>
             <div class="main-nav">
                 <div class="main-nav-class">
-                    <div :class="{'main-nav-class-item':true,'main-nav-class-item-active':windowName=='devtool'?true:false}" @click="openWindow('devtool')">调试
+                    <div :class="{'main-nav-class-item':true,'main-nav-class-item-active':windowName=='devtool'}" @click="openWindow('devtool')">
+                        <span>调试</span>
                         <div class="main-nav-class-item-linebox">
                             <div class="main-nav-class-item-hoverline"></div>
                         </div>
                     </div>
-                    <div :class="{'main-nav-class-item':true,'main-nav-class-item-active':windowName=='doc'?true:false}" @click="openWindow('doc')">文档
+                    <div :class="{'main-nav-class-item':true,'main-nav-class-item-active':windowName=='doc'}" @click="openWindow('doc')">
+                        <span>文档</span>
                         <div class="main-nav-class-item-linebox">
                             <div class="main-nav-class-item-hoverline"></div>
                         </div>
                     </div>
-                    <div :class="{'main-nav-class-item':true,'main-nav-class-item-active':windowName=='ex-doc'?true:false}" @click="openWindow('ex-doc')">样例
+                    <div :class="{'main-nav-class-item':true,'main-nav-class-item-active':windowName=='ex-doc'}" @click="openWindow('ex-doc')">
+                        <span>样例</span>
                         <div class="main-nav-class-item-linebox">
                             <div class="main-nav-class-item-hoverline"></div>
                         </div>
                     </div>
-                    <div class="main-nav-class-item"><a href="https://www.apiphp.com" target="_blank">官网</a>
+                    <div class="main-nav-class-item">
+                        <a href="https://www.apiphp.com" target="_blank">官网</a>
                         <div class="main-nav-class-item-linebox">
                             <div class="main-nav-class-item-hoverline"></div>
                         </div>
                     </div>
-                    <div class="main-nav-class-item"><a href="https://www.apiphp.com/?space=qun" target="_blank">加入QQ群</a>
+                    <div class="main-nav-class-item">
+                        <a href="https://www.apiphp.com/?space=qun" target="_blank">加入QQ群</a>
                         <div class="main-nav-class-item-linebox">
                             <div class="main-nav-class-item-hoverline"></div>
                         </div>

@@ -44,7 +44,7 @@ class Api
         $Stack = Common::quickParameter($UnionData, 'stack', '堆栈', false, false);
         $Log = Common::quickParameter($UnionData, 'log', '日志', false, true);
         $HttpCode = Common::quickParameter($UnionData, 'http', '响应码', false, 200);
-        $Level = strtoupper(Common::quickParameter($UnionData, 'level', '级别'));
+        $Level = strtoupper(Common::quickParameter($UnionData, 'level', '级别', false, 'A'));
 
         $Config = $_SERVER['APIPHP']['Config']['core\Api'];
 
@@ -71,7 +71,7 @@ class Api
             $WrongInfo['level'] = 'framework';
         } elseif (strtoupper($Level) == 'A') {
             $WrongInfo['level'] = 'application';
-        } elseif (strtoupper($Level) == 'U') {
+        } else {
             $WrongInfo['level'] = 'user';
         }
 

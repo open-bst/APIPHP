@@ -198,15 +198,23 @@ class Data
             Api::wrong(['level' => 'F', 'detail' => 'Error#M.12.1', 'code' => 'M.12.1']);
         }
         if ($_SERVER['APIPHP']['Config']['core\Data']['connect']['redis']['password'] != '') {
-            self::$Connect->auth(
-                $_SERVER['APIPHP']['Config']['core\Data']['connect']['redis']['password']
-            ) ?: Api::wrong(
-                ['level' => 'F', 'detail' => 'Error#M.12.2', 'code' => 'M.12.2']
-            );
+            try {
+                self::$Connect->auth(
+                    $_SERVER['APIPHP']['Config']['core\Data']['connect']['redis']['password']
+                ) ?: Api::wrong(
+                    ['level' => 'F', 'detail' => 'Error#M.12.2', 'code' => 'M.12.2']
+                );
+            } catch (\RedisException $e) {
+            }
         }
-        self::$Connect->select($_SERVER['APIPHP']['Config']['core\Data']['connect']['redis']['dbnumber']) ?: Api::wrong(
-            ['level' => 'F', 'detail' => 'Error#M.12.3', 'code' => 'M.12.3']
-        );
+        try {
+            self::$Connect->select(
+                $_SERVER['APIPHP']['Config']['core\Data']['connect']['redis']['dbnumber']
+            ) ?: Api::wrong(
+                ['level' => 'F', 'detail' => 'Error#M.12.3', 'code' => 'M.12.3']
+            );
+        } catch (\RedisException $e) {
+        }
     }
 
     //设置Redis緩存

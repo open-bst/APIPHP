@@ -13,6 +13,8 @@ namespace core;
 class Filter
 {
 
+    private static $LastCheck;
+
     //非空检查
     private static function emptyCheck($OpArray, $Value): bool
     {
@@ -40,14 +42,19 @@ class Filter
     //指定规则检查
     private static function ruleCheck($OpArray, $Value)
     {
-        if (empty($OpArray[3]) || empty($Value)) {
+        if (empty($OpArray[3])) {
             return true;
-        }
-        if ($OpArray[3] == 'email') {
+        } elseif (str_contains($Value, '|')) {
+            $ValueList = explode('|', $Value);
+            return in_array($Value, $ValueList);
+        } elseif ($OpArray[3] == 'email') {
             return filter_var($Value, FILTER_VALIDATE_EMAIL);
-        }
-        if ($OpArray[3] == 'ip') {
+        } elseif ($OpArray[3] == 'ip') {
             return filter_var($Value, FILTER_VALIDATE_IP);
+        } elseif ($OpArray[3] == 'url') {
+            return filter_var($Value, FILTER_VALIDATE_URL);
+        } elseif ($OpArray[3] == 'json') {
+            return json_validate($Value);
         }
         $RuleName = $OpArray[3];
         if (!empty($_SERVER['APIPHP']['Config']['core\Filter']['rule'][$RuleName])) {
@@ -65,6 +72,9 @@ class Filter
         $Optional = Common::quickParameter($UnionData, 'optional', '可选', false, []);
         $Mode = Common::quickParameter($UnionData, 'mode', '模式');
         $Mode = strtolower($Mode);
+
+        self::$LastCheck = ['result' => [], 'optional' => []];
+
         if ($Mode != 'get' && $Mode != 'post' && $Mode != 'header') {
             Api::wrong(['level' => 'F', 'detail' => 'Error#M.7.0' . "\r\n\r\n @ " . $Mode, 'code' => 'M.7.0']);
         }
@@ -82,17 +92,37 @@ class Filter
                 }
             }
 
-            if ($TempData === null && in_array($K, $Optional)) {
-                return true;
+            if (in_array($K, $Optional)) {
+                if ($TempData === null) {
+                    self::$LastCheck['optional'][$K] = false;
+                    self::$LastCheck['result'][$K] = [false, false, false];
+                    continue;
+                } else {
+                    self::$LastCheck['optional'][$K] = true;
+                }
             }
-            if (!self::emptyCheck($TempOp, $TempData) || !self::lengthCheck($TempOp, $TempData) || !self::ruleCheck(
-                    $TempOp,
-                    $TempData
-                )) {
+            self::$LastCheck['result'][$K] = [
+                self::emptyCheck($TempOp, $TempData),
+                self::lengthCheck($TempOp, $TempData),
+                self::ruleCheck($TempOp, $TempData)
+            ];
+            if (!self::$LastCheck['result'][$K][0] || !self::$LastCheck['result'][$K][1] || !self::$LastCheck['result'][$K][2]) {
+                Hook::call(
+                    [
+                        'name' => 'apiphp_filter_mode-verify-failed',
+                        'parameter' => ['field' => $K, 'result' => self::$LastCheck['result'][$K]]
+                    ]
+                );
                 return false;
             }
         }
         return true;
+    }
+
+    //返回最后一次运行Filter::byMode()的校验结果
+    public static function lastCheck($UnionData = []): array
+    {
+        return self::$LastCheck;
     }
 
     //从数据检查
@@ -102,7 +132,10 @@ class Filter
         $Check = Common::quickParameter($UnionData, 'check', '校验');
         $CheckOp = explode(',', $Check);
 
-        if (!self::emptyCheck($CheckOp, $Data) || !self::lengthCheck($CheckOp, $Data) || !self::ruleCheck($CheckOp, $Data)) {
+        if (!self::emptyCheck($CheckOp, $Data) || !self::lengthCheck($CheckOp, $Data) || !self::ruleCheck(
+                $CheckOp,
+                $Data
+            )) {
             return false;
         }
         return true;

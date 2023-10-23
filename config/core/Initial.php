@@ -10,12 +10,12 @@
 //框架配置项
 
 $_SERVER['APIPHP']['Config']['core\Initial']=[
-	//调试模式
-	'debug'=>true,
-	//安全码
-	'safeCode'=>'',
-	//时区
-	'timeZone'=>'Asia/Shanghai',
+    //调试模式
+    'debug'=>true,
+    //安全码
+    'safeCode'=>'',
+    //时区
+    'timeZone'=>'Asia/Shanghai',
     //404处理
     'pageNotFound'=>'',
     //Composer支持

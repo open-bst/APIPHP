@@ -53,7 +53,7 @@ class Db
                 ';dbname=' . $_SERVER['APIPHP']['Config']['core\Db']['dbInfo'][self::$NowDb]['dbname'] .
                 ';charset=' . $_SERVER['APIPHP']['Config']['core\Db']['dbInfo'][self::$NowDb]['charset'];
             try {
-                self::$DbHandle = @new PDO(
+                self::$DbHandle = new PDO(
                     $Dsn,
                     $_SERVER['APIPHP']['Config']['core\Db']['dbInfo'][self::$NowDb]['username'],
                     $_SERVER['APIPHP']['Config']['core\Db']['dbInfo'][self::$NowDb]['password']
@@ -123,6 +123,15 @@ class Db
     //绑定参数
     private static function bindData($StmtKey, $Field, $Data, $Tag = '', $Mix = false,$Md5=false): void
     {
+        $PdoDataType= [
+            'BOOL'=>PDO::PARAM_BOOL,
+            'NULL'=>PDO::PARAM_NULL,
+            'INT'=>PDO::PARAM_INT,
+            'STR'=>PDO::PARAM_STR,
+            'STR_NATL'=>PDO::PARAM_STR_NATL,
+            'STR_CHAR'=>PDO::PARAM_STR_CHAR,
+            'LOB'=>PDO::PARAM_LOB
+        ];
         if (!$Mix) {
             foreach ($Field as $K => $V) {
                 if (!isset($Data[$K])) {
@@ -137,16 +146,26 @@ class Db
                 if ($Tag == '_Where_') {
                     $BindTag .= $K . '_';
                 }
+                $DataType=strtoupper((string)preg_filter('/^\((.*?)\)(.*)/','$1',$V));
+                if(empty($DataType)||empty($PdoDataType[$DataType])){
+                    $DataType='STR';
+                }
+                $V=preg_replace('/^\((.*?)\)/','',$V);
                 if(!str_starts_with($V, '#')||str_contains($V,'?')){
-                    self::$Stmts[$StmtKey]->bindValue(':' . $BindTag . md5($V) , $BindData);
+                    self::$Stmts[$StmtKey]->bindValue(':' . $BindTag . md5($V) , $BindData,$PdoDataType[$DataType]);
                 }
             }
         } else {
             foreach ($Data as $K => $V) {
+                $DataType=strtoupper((string)preg_filter('/^\((.*?)\)(.*)/','$1',$K));
+                if(empty($DataType)||empty($PdoDataType[$DataType])){
+                    $DataType='STR';
+                }
+                $K=preg_replace('/^\((.*?)\)/','',$K);
                 if($Md5){
                     $K=md5($K);
                 }
-                self::$Stmts[$StmtKey]->bindValue(':' . $Tag . $K, $V);
+                self::$Stmts[$StmtKey]->bindValue(':' . $Tag . $K, $V,$PdoDataType[$DataType]);
             }
         }
     }
@@ -204,6 +223,7 @@ class Db
     {
         $Return = '';
         foreach ($Table as $K => $V) {
+            $V=preg_replace('/^\((.*?)\)/','',$V);
             if (str_starts_with($V, '#')) {
                 $Return .=
                     str_replace(
@@ -230,6 +250,7 @@ class Db
         $FieldList = '';
         if (!empty($FieldData)) {
             foreach ($FieldData as $V) {
+                $V=preg_replace('/^\((.*?)\)/','',$V);
                 if ($RawCheck&&str_starts_with($V, '#')) {
                     $FieldList .=' ' .
                         str_replace(
@@ -305,6 +326,11 @@ class Db
                     }
                 }
             }
+            if($Para['debug']){
+                $FieldCo[1]=strtoupper($FieldCo[1]);
+                $FieldCo[2]=strtoupper($FieldCo[2]);
+            }
+            $V=preg_replace('/^\((.*?)\)/','',$V);
             if (str_starts_with($V, '#')) {
                 $WhereSql .= ' ' . $FieldCo[0] .
                     str_replace(['#', '?'],
@@ -470,6 +496,7 @@ class Db
         $DataSql = null;
 
         foreach ($Para['data'] as $K => $V) {
+            $K=preg_replace('/^\((.*?)\)/','',$K);
             if (str_starts_with($K, '#')) {
                 $DataSql .=
                     str_replace(['#', '?'],

@@ -50,12 +50,12 @@ class Tool
     //生成UUID
     public static function uuid($UnionData = []): string
     {
-        $MD5 = Common::quickParameter($UnionData, 'md5', 'md5', false, false);
-        $Return = md5(
-            memory_get_usage() . self::random() . uniqid('', true) . mt_rand(1, 99999) . $_SERVER['REMOTE_ADDR']
+        $Type = Common::quickParameter($UnionData, 'type', '类型', false, 'standard');
+        $Return = sha1(
+            memory_get_usage() . self::random() . uniqid('', true) . mt_rand(1, 99999) . $_SERVER['REMOTE_ADDR'] . microtime()
         );
 
-        if (!$MD5) {
+        if ($Type=='standard') {
             $Return =
                 '{' .
                 substr($Return, 0, 8) . '-' .
@@ -64,6 +64,9 @@ class Tool
                 substr($Return, 16, 4) . '-' .
                 substr($Return, 20, 12) .
                 '}';
+        }
+        else{
+            $Return =substr($Return, 0, 32);
         }
 
         return $Return;

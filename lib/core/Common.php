@@ -13,7 +13,7 @@ namespace core;
 class Common
 {
     //快捷传参
-    public static function quickParameter($UnionData, $Name, $Dialect, $Must = true, $Value = null, $Default = false)
+    public static function quickParameter($UnionData, $Name, $Dialect, $Required = true, $Value = null, $Default = false)
     {
         if (isset($UnionData[$Name])) {
             return $UnionData[$Name];
@@ -31,7 +31,7 @@ class Common
             return $UnionData[0];
         }
 
-        if ($Must) {
+        if ($Required) {
             $Stack = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
             $ErrMsg = '';
             if (isset($Stack[1]['class'])) {
@@ -65,7 +65,7 @@ class Common
         Api::wrong(
             [
                 'level' => 'F',
-                'detail' => 'Error#C.0.4 @ ' . $ModuleName . ' :: ' . $MethodName . '()',
+                'detail' => 'Error#C.0.4'. "\r\n\r\n @ " . $ModuleName . ' :: ' . $MethodName . '()',
                 'code' => 'C.0.4'
             ]
         );

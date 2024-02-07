@@ -92,6 +92,7 @@ class Db
         $ExtraParameters = [
             'data' => ['data', '数据', true, null],
             'sumField' => ['sum', '合计', true, null],
+            'json' => ['json', 'json', false, []],
             'fieldLimit' => ['field_limit', '字段限制', false, []],
             'rowCount' => ['row_count', '行数统计', false, []],
             'groupBy' => ['group_by', '分组', false, []],
@@ -123,7 +124,7 @@ class Db
     //绑定参数
     private static function bindData($StmtKey, $Field, $Data, $Tag = '', $Mix = false,$Md5=false): void
     {
-        $PdoDataType= [
+        $PdoDataTypes= [
             'BOOL'=>PDO::PARAM_BOOL,
             'NULL'=>PDO::PARAM_NULL,
             'INT'=>PDO::PARAM_INT,
@@ -137,35 +138,34 @@ class Db
                 if (!isset($Data[$K])) {
                     Api::wrong(['level' => 'F', 'detail' => 'Error#M.8.5' . "\r\n\r\n @ " . $V, 'code' => 'M.8.5']);
                 }
-                if (is_array($Data[$K])) {
-                    $BindData = json_encode($Data[$K], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-                } else {
-                    $BindData = $Data[$K];
-                }
+                $BindData = $Data[$K];
                 $BindTag = $Tag;
                 if ($Tag == '_Where_') {
                     $BindTag .= $K . '_';
                 }
                 $DataType=strtoupper((string)preg_filter('/^\((.*?)\)(.*)/','$1',$V));
-                if(empty($DataType)||empty($PdoDataType[$DataType])){
+                if(empty($DataType)||empty($PdoDataTypes[$DataType])){
                     $DataType='STR';
                 }
                 $V=preg_replace('/^\((.*?)\)/','',$V);
                 if(!str_starts_with($V, '#')||str_contains($V,'?')){
-                    self::$Stmts[$StmtKey]->bindValue(':' . $BindTag . md5($V) , $BindData,$PdoDataType[$DataType]);
+                    self::$Stmts[$StmtKey]->bindValue(':' . $BindTag . md5($V) , $BindData,$PdoDataTypes[$DataType]);
                 }
             }
         } else {
             foreach ($Data as $K => $V) {
                 $DataType=strtoupper((string)preg_filter('/^\((.*?)\)(.*)/','$1',$K));
-                if(empty($DataType)||empty($PdoDataType[$DataType])){
+                if (is_array($V)) {
+                    $V = json_encode($V, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                }
+                if(empty($DataType)||empty($PdoDataTypes[$DataType])){
                     $DataType='STR';
                 }
                 $K=preg_replace('/^\((.*?)\)/','',$K);
                 if($Md5){
                     $K=md5($K);
                 }
-                self::$Stmts[$StmtKey]->bindValue(':' . $Tag . $K, $V,$PdoDataType[$DataType]);
+                self::$Stmts[$StmtKey]->bindValue(':' . $Tag . $K, $V,$PdoDataTypes[$DataType]);
             }
         }
     }
@@ -390,17 +390,31 @@ class Db
     //查询一条数据
     public static function select($UnionData = [])
     {
-        $Para = self::parameterCheck($UnionData, ['fieldLimit'], 'table');
+        $Para = self::parameterCheck($UnionData, ['fieldLimit','json'], 'table');
         $Para['limit'] = [1];
         $Para['groupBy'] = [];
-        return self::selectCall($Para,'Fetch');
+        $Result= self::selectCall($Para,'Fetch');
+        foreach ($Para['json'] as $V){
+            if(isset($Result[$V])){
+                $Result[$V]=json_decode($Result[$V],true);
+            }
+        }
+        return empty($Result)?false:$Result;
     }
 
     //查询多条数据
     public static function selectMore($UnionData = [])
     {
-        $Para = self::parameterCheck($UnionData, ['fieldLimit', 'groupBy'], 'table');
-        return self::selectCall($Para,'FetchAll');
+        $Para = self::parameterCheck($UnionData, ['fieldLimit', 'groupBy','json'], 'table');
+        $Result= self::selectCall($Para,'FetchAll');
+        foreach ($Result as $K => $Row){
+            foreach ($Para['json'] as $V){
+                if(isset($Row[$V])){
+                    $Result[$K][$V]=json_decode($Row[$V],true);
+                }
+            }
+        }
+        return $Result;
     }
 
 

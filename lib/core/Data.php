@@ -70,6 +70,7 @@ class Data
         $K = Common::quickParameter($UnionData, 'key', '键', true, null, true);
         $Prefix = Common::quickParameter($UnionData, 'prefix', '前缀', false, '');
         $Callback = Common::quickParameter($UnionData, 'callback', '回调', false);
+        $Argument = Common::quickParameter($UnionData, 'argument', '参数', false);
 
         self::initial();
 
@@ -84,8 +85,9 @@ class Data
             return null;
         }
 
-        if ($Result === null && is_object($Callback)) {
-            return $Callback();
+        if ($Result === null && is_callable($Callback)) {
+
+            return $Callback($Argument);
         } else {
             return $Result;
         }
@@ -104,7 +106,7 @@ class Data
     }
 
     //获取文件缓存路径
-    private static function getFilePath($Prefix, $K, $Mkdir = false)
+    private static function getFilePath($Prefix, $K, $Mkdir = false): string
     {
         $MD5 = md5($K);
         $Path = _ROOT . '/temp/data/' . $Prefix;
@@ -185,7 +187,7 @@ class Data
     }
 
     //连接Redis
-    private static function redisConnect()
+    private static function redisConnect(): void
     {
         self::$Connect = new \Redis();
         try {

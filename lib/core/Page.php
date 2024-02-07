@@ -42,12 +42,12 @@ class Page
         }
         if ($TotalPage < $NowPage) {
             $Result['info'] = [
-                'nowPage' => $NowPage,
-                'totalPage' => $TotalPage,
-                'pageNumber'=>$Number,
-                'totalNumber' => $TotalNumber,
-                'startNumber' => $Start + 1,
-                'endNumber' => $End
+                'now_page' => $NowPage,
+                'total_page' => $TotalPage,
+                'page_number'=>$Number,
+                'total_number' => $TotalNumber,
+                'start_number' => $Start + 1,
+                'end_number' => $End
             ];
             return $Result;
         }
@@ -61,12 +61,12 @@ class Page
         $UnionData['limit'] = $Limit;
         $Result['result'] = Db::selectMore($UnionData);
         $Result['info'] = [
-            'nowPage' => $NowPage,
-            'totalPage' => $TotalPage,
-            'pageNumber'=>$Number,
-            'totalNumber' => $TotalNumber,
-            'startNumber' => $Start + 1,
-            'endNumber' => $End
+            'now_page' => $NowPage,
+            'total_page' => $TotalPage,
+            'page_number'=>$Number,
+            'total_number' => $TotalNumber,
+            'start_number' => $Start + 1,
+            'end_number' => $End
         ];
         return $Result;
     }

@@ -25,23 +25,13 @@ class Load
         $IgnoreErrorInfo
     ) {
         if ($FileError > 0) {
-            switch ($FileError) {
-                case 1:
-                    $ModuleError = '3';
-                    break;
-                case 2:
-                    $ModuleError = '4';
-                    break;
-                case 3:
-                    $ModuleError = '5';
-                    break;
-                case 4:
-                    $ModuleError = '6';
-                    break;
-                default:
-                    $ModuleError = '7';
-                    break;
-            }
+            $ModuleError = match ($FileError) {
+                1 => '3',
+                2 => '4',
+                3 => '5',
+                4 => '6',
+                default => '7'
+            };
             if (!$IgnoreErrorInfo) {
                 Api::wrong(['level' => 'F', 'detail' => 'Error#M.4.' . $ModuleError, 'code' => 'M.4.' . $ModuleError]);
             } else {
@@ -71,7 +61,7 @@ class Load
             }
         }
         if (empty($SaveNameInfo)) {
-            $FileName = md5(date("YmdHis") . mt_rand(1000000, 9999999) . $_SERVER['REMOTE_ADDR']) . '.' . $Suffix;
+            $FileName = Tool::uuid(['type'=>'string']). '.' . $Suffix;
         } else {
             $FileName = $SaveNameInfo . '.' . $Suffix;
         }
@@ -85,7 +75,7 @@ class Load
                 return null;
             }
         }
-        return str_replace(_ROOT, '', $PathInfo . '/' . $FileName);
+        return $FileName;
     }
 
     //上传
@@ -96,7 +86,7 @@ class Load
         $Type = Common::quickParameter($UnionData, 'type', '类型');
         $SaveName = Common::quickParameter($UnionData, 'save_name', '保存名称', false);
         $Size = Common::quickParameter($UnionData, 'size', '大小', false);
-        $Number = Common::quickParameter($UnionData, 'number', '数量', false);
+        $Number = Common::quickParameter($UnionData, 'number', '数量', false,1);
         $IgnoreError = Common::quickParameter($UnionData, 'ignore_error', '忽略错误', false, false);
 
         $Path = Common::diskPath($Path);
@@ -124,7 +114,7 @@ class Load
                 }
                 $TempType = $Type;
                 if (is_array($Type)) {
-                    if (empty($Type[$TempField])) {
+                    if (!isset($Type[$TempField])) {
                         Api::wrong(
                             ['level' => 'F', 'detail' => 'Error#M.4.2' . "\r\n\r\n @ " . $TempField, 'code' => 'M.4.2']
                         );
@@ -149,27 +139,24 @@ class Load
                     $TempSize = intval($Size[$TempField]) * 1024;
                 }
 
-                if (empty($_FILES[$TempField])) {
-                    $Return[$TempField] = [];
-                } elseif (is_string($_FILES[$TempField]['tmp_name'])) {
-                    $Return[$TempField][0] = self::upCall(
-                        $_FILES[$TempField]['error'],
+                if (is_string($_FILES[$TempField]['tmp_name'])) {
+                    $Return[$TempField][0] = [
                         $_FILES[$TempField]['name'],
-                        $_FILES[$TempField]['size'],
-                        $_FILES[$TempField]['tmp_name'],
-                        $TempSaveName,
-                        $TempPath,
-                        $TempSize,
-                        $TempType,
-                        $IgnoreError
-                    );
+                        self::upCall(
+                            $_FILES[$TempField]['error'],
+                            $_FILES[$TempField]['name'],
+                            $_FILES[$TempField]['size'],
+                            $_FILES[$TempField]['tmp_name'],
+                            $TempSaveName,
+                            $TempPath,
+                            $TempSize,
+                            $TempType,
+                            $IgnoreError
+                        )
+                    ];
                 } elseif (is_array($_FILES[$TempField]['tmp_name'])) {
-                    if (empty($Number[$TempField]) || intval($Number[$TempField]) < 0) {
-                        if (is_int($Number)) {
-                            $TempNumber = $Number;
-                        } else {
-                            $TempNumber = 1;
-                        }
+                    if (empty($Number[$TempField])) {
+                        $TempNumber = intval($Number);
                     } else {
                         $TempNumber = intval($Number[$TempField]);
                     }
@@ -177,18 +164,24 @@ class Load
                         $TempNumber = count($_FILES[$TempField]['tmp_name']);
                     }
                     for ($i = 0; $i < $TempNumber; $i++) {
-                        $Return[$TempField][$i] = self::upCall(
-                            $_FILES[$TempField]['error'][$i],
+                        $Return[$TempField][$i] = [
                             $_FILES[$TempField]['name'][$i],
-                            $_FILES[$TempField]['size'][$i],
-                            $_FILES[$TempField]['tmp_name'][$i],
-                            null,
-                            $TempPath,
-                            $TempSize,
-                            $TempType,
-                            $IgnoreError
-                        );
+                            self::upCall(
+                                $_FILES[$TempField]['error'][$i],
+                                $_FILES[$TempField]['name'][$i],
+                                $_FILES[$TempField]['size'][$i],
+                                $_FILES[$TempField]['tmp_name'][$i],
+                                null,
+                                $TempPath,
+                                $TempSize,
+                                $TempType,
+                                $IgnoreError
+                            )
+                        ];
                     }
+                }
+                else{
+                    $Return[$TempField] = [];
                 }
             }
         }

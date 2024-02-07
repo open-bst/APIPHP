@@ -54,7 +54,7 @@ class Initial
         };
 
         $PSE .= $ErrMsg . ' in ' . str_replace('\\', '/', $ErrFile) . ' on ' . $ErrLine;
-        Api::wrong(['level' => 'S', 'detail' => 'Error#C.0.2 @ ' . $PSE, 'code' => 'C.0.2']);
+        Api::wrong(['level' => 'S', 'detail' => 'Error#C.0.2'. "\r\n\r\n @ " . $PSE, 'code' => 'C.0.2']);
         return true;
     }
 

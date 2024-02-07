@@ -57,7 +57,7 @@ class Dir
     //目录大小调用
     private static function sizeCall($Path)
     {
-        $DirSize = 0;
+        $DirSize = 0.00;
         if (file_exists($Path) && $DirHandle = @opendir($Path)) {
             while ($FileName = readdir($DirHandle)) {
                 if ($FileName != "." && $FileName != "..") {
@@ -75,11 +75,10 @@ class Dir
         } else {
             Api::wrong(['level' => 'F', 'detail' => 'Error#M.0.0', 'code' => 'M.0.0']);
         }
-        return true;
     }
 
     //目录大小
-    public static function size($UnionData = [])
+    public static function size($UnionData = []): float
     {
         $Path = Common::quickParameter($UnionData, 'path', '路径',true,null,true);
         $Unit = Common::quickParameter($UnionData, 'unit', '单位', false);
@@ -97,7 +96,7 @@ class Dir
     }
 
     //删除目录调用
-    private static function deleteCall($Dir)
+    private static function deleteCall($Dir): void
     {
         if (file_exists($Dir)) {
             if ($DirHandle = @opendir($Dir)) {
@@ -121,7 +120,7 @@ class Dir
     }
 
     //删除目录
-    public static function delete($UnionData = [])
+    public static function delete($UnionData = []): void
     {
         $Path = Common::quickParameter($UnionData, 'path', '路径',true,null,true);
 
@@ -135,7 +134,7 @@ class Dir
     }
 
     //复制目录调用
-    private static function copyCall($From, $To)
+    private static function copyCall($From, $To): void
     {
         if (!file_exists($From)) {
             Api::wrong(['level' => 'F', 'detail' => 'Error#M.0.0', 'code' => 'M.0.0']);
@@ -166,7 +165,7 @@ class Dir
     }
 
     //复制目录
-    public static function copy($UnionData = [])
+    public static function copy($UnionData = []): void
     {
         $From = Common::quickParameter($UnionData, 'from', '源路径');
         $To = Common::quickParameter($UnionData, 'to', '目标路径');

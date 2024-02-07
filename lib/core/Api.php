@@ -12,7 +12,7 @@ namespace core;
 
 class Api
 {
-    public static function respond($UnionData)
+    public static function respond($UnionData): void
     {
         $Content = Common::quickParameter($UnionData, 'content', '内容', false, []);
         $Log = Common::quickParameter($UnionData, 'log', '日志', false, false);
@@ -109,7 +109,7 @@ class Api
         } else {
             foreach ($Config['wrong']['style'] as $K => $V) {
                 $Config['wrong']['style'][$K] = str_replace(['{code}', '{info}', '{time}'],
-                    ['M.4.12', 'Error#M.4.12', $WrongInfo['time']],
+                    ['M.13.0', 'Error#M.13.0', $WrongInfo['time']],
                     $V);
             }
         }

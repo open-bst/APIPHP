@@ -1,6 +1,6 @@
 <?php
 $_SERVER['APIPHP']['Config']['core\Data']=[
-	'handle'=>'redis',
+	'handle'=>'file',
 	'connect'=>[
 		'file'=>[
 			'level'=>3,

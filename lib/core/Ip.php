@@ -5,7 +5,7 @@ namespace core;
 /*
   APIPHP开源框架
 
-  ©2023 APIPHP.com
+  ©2024 APIPHP.com
 
   框架版本号：1.0.0
 */
@@ -20,7 +20,7 @@ class Ip
 
     private static function initial(): bool
     {
-        if (!empty($_SERVER['APIPHP']['Runtime']['Ip']['initial'])) {
+        if (!empty($_SERVER['APIPHP']['Runtime']['core\Ip']['initial'])) {
             return true;
         }
 
@@ -45,7 +45,7 @@ class Ip
         self::$BlackList = self::textToArray($BlackListText);
         self::$WhiteList = self::textToArray($WhiteListText);
 
-        $_SERVER['APIPHP']['Runtime']['Ip']['initial'] = 1;
+        $_SERVER['APIPHP']['Runtime']['core\Ip']['initial'] = 1;
         return true;
     }
 

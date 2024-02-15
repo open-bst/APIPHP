@@ -2,10 +2,11 @@
 
 namespace core;
 
+
 /*
   APIPHP开源框架
 
-  ©2023 APIPHP.com
+  ©2024 APIPHP.com
 
   框架版本号：1.0.0
 */
@@ -19,17 +20,17 @@ class Data
 
     private static function initial(): bool
     {
-        if (!empty($_SERVER['APIPHP']['Runtime']['Data']['initial'])) {
+        if (!empty($_SERVER['APIPHP']['Runtime']['core\Data']['initial'])) {
             return true;
         }
 
         self::$Handle = strtolower($_SERVER['APIPHP']['Config']['core\Data']['handle']);
 
         if (self::$Handle == 'redis') {
-            self::redisConnect();
+            self::$Connect=Redis_::connect($_SERVER['APIPHP']['Config']['core\Data']['connect']['redis'],true);
         }
 
-        $_SERVER['APIPHP']['Runtime']['Data']['initial'] = 1;
+        $_SERVER['APIPHP']['Runtime']['core\Data']['initial'] = true;
         return true;
     }
 
@@ -111,10 +112,10 @@ class Data
         $MD5 = md5($K);
         $Path = _ROOT . '/temp/data/' . $Prefix;
         $Level = intval($_SERVER['APIPHP']['Config']['core\Data']['connect']['file']['level']);
-        if ($_SERVER['APIPHP']['Config']['core\Data']['connect']['file']['level'] < 1) {
+        if ($Level < 1) {
             $Level = 0;
         }
-        if ($_SERVER['APIPHP']['Config']['core\Data']['connect']['file']['level'] > 15) {
+        if ($Level > 15) {
             $Level = 15;
         }
         for ($i = 0; $i < $Level; $i++) {
@@ -186,39 +187,6 @@ class Data
         return self::strToVar(strtok("\r\n"));
     }
 
-    //连接Redis
-    private static function redisConnect(): void
-    {
-        self::$Connect = new \Redis();
-        try {
-            self::$Connect->connect(
-                $_SERVER['APIPHP']['Config']['core\Data']['connect']['redis']['address'],
-                $_SERVER['APIPHP']['Config']['core\Data']['connect']['redis']['port'],
-                $_SERVER['APIPHP']['Config']['core\Data']['connect']['redis']['timeout']
-            );
-        } catch (Throwable $t) {
-            Api::wrong(['level' => 'F', 'detail' => 'Error#M.12.1', 'code' => 'M.12.1']);
-        }
-        if ($_SERVER['APIPHP']['Config']['core\Data']['connect']['redis']['password'] != '') {
-            try {
-                self::$Connect->auth(
-                    $_SERVER['APIPHP']['Config']['core\Data']['connect']['redis']['password']
-                ) ?: Api::wrong(
-                    ['level' => 'F', 'detail' => 'Error#M.12.2', 'code' => 'M.12.2']
-                );
-            } catch (\RedisException $e) {
-            }
-        }
-        try {
-            self::$Connect->select(
-                $_SERVER['APIPHP']['Config']['core\Data']['connect']['redis']['dbnumber']
-            ) ?: Api::wrong(
-                ['level' => 'F', 'detail' => 'Error#M.12.3', 'code' => 'M.12.3']
-            );
-        } catch (\RedisException $e) {
-        }
-    }
-
     //设置Redis緩存
     private static function setByRedis($Prefix, $K, $Value, $Time): bool
     {
@@ -227,7 +195,7 @@ class Data
             $Prefix .= '_';
         }
         if ($Time < 1) {
-            self::$Connect->delete($MD5);
+            self::$Connect->del($MD5);
             return true;
         }
         $Cache = self::varToStr($Value);

@@ -6,12 +6,6 @@ $_SERVER['APIPHP']['Config']['core\Data']=[
 			'level'=>3,
 			'clean'=>1000,
 		],
-		'redis'=>[
-			'address'=>'localhost',
-			'password'=>'',
-			'dbnumber'=>0,
-			'port'=>6379,
-			'timeout'=>15
-		]
+        'redis'=>'default'
 	]
 ];

@@ -5,7 +5,7 @@ namespace core;
 /*
   APIPHP开源框架
 
-  ©2023 APIPHP.com
+  ©2024 APIPHP.com
 
   框架版本号：1.0.0
 */
@@ -16,7 +16,7 @@ class Hook
     //初始化
     public static function initial()
     {
-        $_SERVER['APIPHP']['Runtime']['core/Hook']=[];
+        $_SERVER['APIPHP']['Runtime']['core\Hook']=[];
         $FilePath=_ROOT.'/source/hook.apiphp';
         if(file_exists($FilePath)){
             require $FilePath;
@@ -28,10 +28,10 @@ class Hook
     {
         $List = Common::quickParameter($UnionData, 'list', '列表',true,NULL,true);
         foreach ($List as $K => $V){
-            if(!isset($_SERVER['APIPHP']['Runtime']['core/Hook'][$K])){
-                $_SERVER['APIPHP']['Runtime']['core/Hook'][$K]=[];
+            if(!isset($_SERVER['APIPHP']['Runtime']['core\Hook'][$K])){
+                $_SERVER['APIPHP']['Runtime']['core\Hook'][$K]=[];
             }
-            $_SERVER['APIPHP']['Runtime']['core/Hook'][$K]=array_merge($_SERVER['APIPHP']['Runtime']['core/Hook'][$K],$V);
+            $_SERVER['APIPHP']['Runtime']['core\Hook'][$K]=array_merge($_SERVER['APIPHP']['Runtime']['core\Hook'][$K],$V);
         }
     }
 
@@ -40,7 +40,7 @@ class Hook
     {
         $Name = Common::quickParameter($UnionData, 'name', '名称', true, null, true);
         $Para= Common::quickParameter($UnionData, 'parameter', '参数',false,[]);
-        $HookList=$_SERVER['APIPHP']['Runtime']['core/Hook'];
+        $HookList=$_SERVER['APIPHP']['Runtime']['core\Hook'];
         if(!empty($HookList[$Name])){
             foreach ($HookList[$Name] as $V){
                 $Func='plugin\\'.$V;

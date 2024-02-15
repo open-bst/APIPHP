@@ -5,7 +5,7 @@ namespace core;
 /*
   APIPHP开源框架
 
-  ©2023 APIPHP.com
+  ©2024 APIPHP.com
 
   框架版本号：1.0.0
 */
@@ -30,7 +30,7 @@ class Load
                 2 => '4',
                 3 => '5',
                 4 => '6',
-                default => '7'
+                default => '7',
             };
             if (!$IgnoreErrorInfo) {
                 Api::wrong(['level' => 'F', 'detail' => 'Error#M.4.' . $ModuleError, 'code' => 'M.4.' . $ModuleError]);

@@ -10,7 +10,7 @@ use PDOException;
 /*
   APIPHP开源框架
 
-  ©2023 APIPHP.com
+  ©2024 APIPHP.com
 
   框架版本号：1.0.0
 */
@@ -44,20 +44,17 @@ class Db
         if (empty(self::$DbHandle)) {
             self::$Stmts = [];
 
-            if (empty($_SERVER['APIPHP']['Config']['core\Db']['dbInfo'][self::$NowDb])) {
+            if (!isset($_SERVER['APIPHP']['Config']['core\Db']['dbInfo'][self::$NowDb])) {
                 Api::wrong(['level' => 'F', 'detail' => 'Error#M.8.0', 'code' => 'M.8.0']);
             }
-            $Dsn = $_SERVER['APIPHP']['Config']['core\Db']['dbInfo'][self::$NowDb]['type'] .
-                ':host=' . $_SERVER['APIPHP']['Config']['core\Db']['dbInfo'][self::$NowDb]['address'] .
-                ';port=' . $_SERVER['APIPHP']['Config']['core\Db']['dbInfo'][self::$NowDb]['port'] .
-                ';dbname=' . $_SERVER['APIPHP']['Config']['core\Db']['dbInfo'][self::$NowDb]['dbname'] .
-                ';charset=' . $_SERVER['APIPHP']['Config']['core\Db']['dbInfo'][self::$NowDb]['charset'];
+            $Config=$_SERVER['APIPHP']['Config']['core\Db']['dbInfo'][self::$NowDb];
+            $Dsn = $Config['type'] .
+                ':host=' . $Config['address'] .
+                ';port=' . $Config['port'] .
+                ';dbname=' . $Config['dbname'] .
+                ';charset=' . $Config['charset'];
             try {
-                self::$DbHandle = new PDO(
-                    $Dsn,
-                    $_SERVER['APIPHP']['Config']['core\Db']['dbInfo'][self::$NowDb]['username'],
-                    $_SERVER['APIPHP']['Config']['core\Db']['dbInfo'][self::$NowDb]['password']
-                );
+                self::$DbHandle = new PDO($Dsn, $Config['username'],$Config['password']);
                 self::$DbHandle->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             } catch (PDOException $Err) {
                 Api::wrong(
@@ -393,6 +390,7 @@ class Db
         $Para = self::parameterCheck($UnionData, ['fieldLimit','json'], 'table');
         $Para['limit'] = [1];
         $Para['groupBy'] = [];
+        $Para['json']=array_unique($Para['json']);
         $Result= self::selectCall($Para,'Fetch');
         foreach ($Para['json'] as $V){
             if(isset($Result[$V])){
@@ -406,6 +404,7 @@ class Db
     public static function selectMore($UnionData = [])
     {
         $Para = self::parameterCheck($UnionData, ['fieldLimit', 'groupBy','json'], 'table');
+        $Para['json']=array_unique($Para['json']);
         $Result= self::selectCall($Para,'FetchAll');
         foreach ($Result as $K => $Row){
             foreach ($Para['json'] as $V){

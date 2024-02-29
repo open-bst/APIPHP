@@ -27,7 +27,7 @@ class Data
         self::$Handle = strtolower($_SERVER['APIPHP']['Config']['core\Data']['handle']);
 
         if (self::$Handle == 'redis') {
-            self::$Connect=Redis_::connect($_SERVER['APIPHP']['Config']['core\Data']['connect']['redis'],true);
+            self::$Connect=Redis_::connect(['name'=>$_SERVER['APIPHP']['Config']['core\Data']['connect']['redis'],'return_connect'=>true]);
         }
 
         $_SERVER['APIPHP']['Runtime']['core\Data']['initial'] = true;

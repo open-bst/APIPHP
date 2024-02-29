@@ -14,25 +14,11 @@ use Throwable;
 
 class Redis_
 {
-    private static $Connect;
-
-    private static function initial($Name): bool
-    {
-        if (!empty($_SERVER['APIPHP']['Runtime']['core\Redis_']['initial'])) {
-            return true;
-        }
-
-        self::connect($Name);
-
-        $_SERVER['APIPHP']['Runtime']['core\Redis_']['initial'] = true;
-        return true;
-    }
-
-
-
     //连接Redis
-    public static function connect($Name,$GetConnent=false): \Redis
+    public static function connect($UnionData = []): \Redis
     {
+        $Name = Common::quickParameter($UnionData, 'name', '名称');
+        $ReturnConnect = Common::quickParameter($UnionData, 'return_connect', '返回连接', false, false);
         $Connect= new \Redis();
 
 
@@ -67,9 +53,6 @@ class Redis_
                 ['level' => 'F', 'detail' => 'Error#M.1.3', 'code' => 'M.1.3']
             );
         } catch (\RedisException $e) {
-        }
-        if(!$GetConnent){
-            self::$Connect=$Connect;
         }
         return $Connect;
     }

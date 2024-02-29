@@ -24,7 +24,7 @@ class Api
             $Style[$K] = $V;
         }
 
-        $Respond = json_encode($Style);
+        $Respond = json_encode($Style,JSON_INVALID_UTF8_IGNORE);
 
         if ($Log) {
             Log::add(['level' => 'info', 'info' => '[API Respond] ' . $Respond]);
@@ -33,7 +33,6 @@ class Api
         ob_clean();
         http_response_code(intval($HttpCode));
         header('content-type:application/json');
-
         echo $Respond;
     }
 
@@ -59,7 +58,6 @@ class Api
         }
 
         $WrongInfo = [
-            'level' => 'unknown',
             'detail' => str_replace('\\', '/', $Detail),
             'stack' => [],
             'time' => microtime(true)

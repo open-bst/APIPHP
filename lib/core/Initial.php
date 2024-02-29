@@ -13,7 +13,7 @@ namespace core;
 class Initial
 {
     //自动加载
-    public static function autoload($ClassName)
+    public static function autoload($ClassName): void
     {
         if (!file_exists(_ROOT . '/lib/' . str_replace(['\\', '//'], '/', $ClassName) . '.php')) {
             if(!$_SERVER['APIPHP']['Config']['core\Initial']['composer']){
@@ -28,7 +28,7 @@ class Initial
     }
 
     // 错误处理
-    public static function fatalErr()
+    public static function fatalErr(): void
     {
         $Err = error_get_last();
         if ($Err && ($Err["type"] === ($Err["type"] & E_FATAL))) {
@@ -59,7 +59,7 @@ class Initial
     }
 
     //调试模式
-    public static function debug()
+    public static function debug(): void
     {
         if (!_DEBUG) {
             error_reporting(0);
@@ -72,7 +72,7 @@ class Initial
     }
 
     //路由
-    public static function route()
+    public static function route(): void
     {
         $_SERVER['APIPHP']['Option'] = getopt('', ['path:']);
         if (empty($_SERVER['APIPHP']['Option']['path'])) {
@@ -82,6 +82,16 @@ class Initial
             $_SERVER['APIPHP']['URI'] = $_GET['p_a_t_h'];
         } else {
             $_SERVER['APIPHP']['URI'] = $_SERVER['APIPHP']['Option']['path'];
+            $QueryOpt=getopt('', ['query:']);
+            if(!empty($QueryOpt)){
+                $Query=explode('&',$QueryOpt['query']);
+                foreach ($Query as $V){
+                    $V=explode('=',$V);
+                    if(!empty($V[0])){
+                        $_GET[urldecode($V[0])]=empty($V[1])?'':urldecode($V[1]);
+                    }
+                }
+            }
         }
         $_SERVER['APIPHP']['URI']=Hook::call(
             [

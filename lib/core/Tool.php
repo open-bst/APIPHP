@@ -16,23 +16,23 @@ class Tool
 {
 
     //随机字符
-    public static function random($UnionData = [])
+    public static function random($UnionData = []): string
     {
         $Mode = Common::quickParameter($UnionData, 'mode', '模式', false, 'AaN');
         $StringLength = Common::quickParameter($UnionData, 'length', '长度', false, 32);
 
-        $String = null;
+        $String = '';
         $NWord = '0123456789';
         $AUpperWord = 'QWERTYUIOPASDFGHJKLZXCVBNM';
         $ALowerWord = 'qwertyuiopasdfghjklzxcvbnm';
-        $Word = null;
-        if (strstr($Mode, 'A')) {
+        $Word = '';
+        if (str_contains($Mode, 'A')) {
             $Word .= $AUpperWord;
         }
-        if (strstr($Mode, 'a')) {
+        if (str_contains($Mode, 'a')) {
             $Word .= $ALowerWord;
         }
-        if (strstr($Mode, 'N')) {
+        if (str_contains($Mode, 'N')) {
             $Word .= $NWord;
         }
         if (empty($Mode)) {
@@ -72,23 +72,8 @@ class Tool
         return $Return;
     }
 
-    //获取Header指定字段的值
-    public static function getHeader($UnionData = []): array
-    {
-        $Field = Common::quickParameter($UnionData, 'field', '字段', true, null, true);
-        $ReturnArray = [];
-        foreach ($Field as $V) {
-            $FieldName = 'HTTP_' . str_replace('-', '_', strtoupper($V));
-
-            if (isset($_SERVER[$FieldName])) {
-                $ReturnArray[$V] = $_SERVER[$FieldName];
-            }
-        }
-        return $ReturnArray;
-    }
-
     //向目标地址发送数据
-    public static function send($UnionData = [])
+    public static function send($UnionData = []):mixed
     {
         $Url = Common::quickParameter($UnionData, 'url', '地址', true, null, true);
         $Mode = Common::quickParameter($UnionData, 'mode', '模式', false, 'GET');

@@ -15,10 +15,9 @@ class Mail
 {
 
     //SocketError
-    private static function sendError($Handle): bool
+    private static function sendError($Handle): void
     {
         fclose($Handle);
-        return false;
     }
 
     //Socket发送
@@ -107,7 +106,7 @@ class Mail
         }
         $Response .= fgets($Handle, 512);
 
-        if (strstr($Response, '535 Authentication')) {
+        if (str_contains($Response, '535 Authentication')) {
             return false;
         }
 

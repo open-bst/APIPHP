@@ -17,9 +17,9 @@ use PDOException;
 
 class Db
 {
-    private static $DbHandle;
-    private static $NowDb;
-    private static $Stmts;
+    private static PDO|null $DbHandle;
+    private static string $NowDb;
+    private static array $Stmts;
 
     //选择数据库
     public static function choose($UnionData): void
@@ -35,6 +35,7 @@ class Db
     {
         if (empty($DbName)) {
             $DbName = $_SERVER['APIPHP']['Config']['core\Db']['default'];
+            self::$NowDb = $DbName;
         }
         if (self::$NowDb != $DbName) {
             self::$DbHandle = null;
@@ -82,17 +83,18 @@ class Db
             'desc' => ['desc', '降序', false, []],
             'limit' => ['limit', '限制', false, []],
             'index' => ['index', '索引', false, []],
-            'dbName' => ['db_name', '数据库', false, ''],
+            'db_name' => ['db_name', '数据库', false, ''],
             'debug' => ['debug', '调试', false, false]
         ];
 
         $ExtraParameters = [
             'data' => ['data', '数据', true, null],
-            'sumField' => ['sum', '合计', true, null],
+            'sum' => ['sum', '合计', true, null],
             'json' => ['json', 'json', false, []],
-            'fieldLimit' => ['field_limit', '字段限制', false, []],
-            'rowCount' => ['row_count', '行数统计', false, []],
-            'groupBy' => ['group_by', '分组', false, []],
+            'return_object' => ['return_object', '返回对象', false, false],
+            'field_limit' => ['field_limit', '字段限制', false, []],
+            'row_count' => ['row_count', '行数统计', false, []],
+            'group_by' => ['group_by', '分组', false, []],
             'unlock' => ['unlock', '解锁', false, false]
         ];
 
@@ -168,7 +170,7 @@ class Db
     }
 
     //执行预处理
-    private static function execBind($StmtKey, $PreSql, $Action, $Debug)
+    private static function execBind($StmtKey, $PreSql, $Action, $Debug):mixed
     {
         self::sqlLog($PreSql);
         if ($Debug) {
@@ -190,7 +192,7 @@ class Db
         } elseif ($Action == 'InsertId') {
             return self::$DbHandle->lastInsertId();
         } elseif ($Action == 'RowCount') {
-            return self::$Stmts[$StmtKey]->rowCount();
+            return self::$Stmts[$StmtKey]->row_count();
         } else {
             return null;
         }
@@ -242,7 +244,7 @@ class Db
     }
 
     //获取字段列表
-    private static function getFieldList($FieldData, $Default, $RawCheck=false)
+    private static function getFieldList($FieldData, $Default, $RawCheck=false):mixed
     {
         $FieldList = '';
         if (!empty($FieldData)) {
@@ -364,8 +366,8 @@ class Db
         }
 
         $GroupBySql = '';
-        if (!empty($Para['groupBy'])) {
-            $GroupBySql = 'GROUP BY' . self::getFieldList($Para['groupBy'], '');
+        if (!empty($Para['group_by'])) {
+            $GroupBySql = 'GROUP BY' . self::getFieldList($Para['group_by'], '');
         }
 
         return $WhereSql . ' ' . $OrderSql . $LimitSql . $GroupBySql;
@@ -375,9 +377,9 @@ class Db
     //查询方法调用
     private static function selectCall($Para,$FetchType){
 
-        $QueryString = 'SELECT' . self::getFieldList($Para['fieldLimit'], '*',true) . ' FROM ' . self::getTableList($Para['table'],$Para['index']) . self::queryToSql($Para);
+        $QueryString = 'SELECT' . self::getFieldList($Para['field_limit'], '*',true) . ' FROM ' . self::getTableList($Para['table'],$Para['index']) . self::queryToSql($Para);
 
-        $StmtKey = self::createBind($QueryString, $Para['dbName']);
+        $StmtKey = self::createBind($QueryString, $Para['db_name']);
         self::bindData($StmtKey, $Para['field'], $Para['value'], '_Where_');
 
         return self::execBind($StmtKey, $QueryString, $FetchType, $Para['debug']);
@@ -387,14 +389,14 @@ class Db
     //查询一条数据
     public static function select($UnionData = [])
     {
-        $Para = self::parameterCheck($UnionData, ['fieldLimit','json'], 'table');
+        $Para = self::parameterCheck($UnionData, ['field_limit','json','return_object'], 'table');
         $Para['limit'] = [1];
-        $Para['groupBy'] = [];
+        $Para['group_by'] = [];
         $Para['json']=array_unique($Para['json']);
         $Result= self::selectCall($Para,'Fetch');
         foreach ($Para['json'] as $V){
             if(isset($Result[$V])){
-                $Result[$V]=json_decode($Result[$V],true);
+                $Result[$V]=json_decode($Result[$V],!$Para['return_object']);
             }
         }
         return empty($Result)?false:$Result;
@@ -403,13 +405,13 @@ class Db
     //查询多条数据
     public static function selectMore($UnionData = [])
     {
-        $Para = self::parameterCheck($UnionData, ['fieldLimit', 'groupBy','json'], 'table');
+        $Para = self::parameterCheck($UnionData, ['field_limit', 'group_by','json','return_object'], 'table');
         $Para['json']=array_unique($Para['json']);
         $Result= self::selectCall($Para,'FetchAll');
         foreach ($Result as $K => $Row){
             foreach ($Para['json'] as $V){
                 if(isset($Row[$V])){
-                    $Result[$K][$V]=json_decode($Row[$V],true);
+                    $Result[$K][$V]=json_decode($Row[$V],!$Para['return_object']);
                 }
             }
         }
@@ -420,14 +422,14 @@ class Db
     //记录总数
     public static function total($UnionData = [])
     {
-        $Para = self::parameterCheck($UnionData, ['groupBy'], 'table');
+        $Para = self::parameterCheck($UnionData, ['group_by'], 'table');
 
-        $Para['fieldLimit'] = $Para['groupBy'];
-        $Para['fieldLimit'][]='#COUNT(*) AS `__Total`';
+        $Para['field_limit'] = $Para['group_by'];
+        $Para['field_limit'][]='#COUNT(*) AS `__Total`';
 
         $Return=self::selectCall($Para,'FetchAll');
 
-        if (!empty($Para['groupBy'])) {
+        if (!empty($Para['group_by'])) {
             return $Return;
         } else {
             return $Return[0]['__Total'];
@@ -437,12 +439,12 @@ class Db
     //求和
     public static function sum($UnionData = []): array
     {
-        $Para = self::parameterCheck($UnionData, ['sumField'], 'table');
-        $Para['groupBy'] = [];
-        $Para['fieldLimit'] = [];
+        $Para = self::parameterCheck($UnionData, ['sum'], 'table');
+        $Para['group_by'] = [];
+        $Para['field_limit'] = [];
 
-        foreach ($Para['sumField'] as $K => $V) {
-            $Para['fieldLimit'][]= '#SUM(' . self::splitName($K,3) . ')' . ' AS `' . $V . '`';
+        foreach ($Para['sum'] as $K => $V) {
+            $Para['field_limit'][]= '#SUM(' . self::splitName($K,3) . ')' . ' AS `' . $V . '`';
         }
 
         $Return=self::selectCall($Para,'Fetch');
@@ -471,7 +473,7 @@ class Db
 
         $QueryString = 'INSERT INTO' . self::getTableList($Para['table'],$Para['index']) . ' ( ' . $InsertField . ' ) VALUES ( ' . $InsertValue . ' )' ;
 
-        $StmtKey = self::createBind($QueryString, $Para['dbName']);
+        $StmtKey = self::createBind($QueryString, $Para['db_name']);
         self::bindData($StmtKey, [], $Para['data'], '_Insert_', true,true);
 
         return self::execBind($StmtKey, $QueryString, 'InsertId', $Para['debug']);
@@ -488,22 +490,22 @@ class Db
     //删除数据
     public static function delete($UnionData = [])
     {
-        $Para = self::parameterCheck($UnionData, ['rowCount', 'unlock'], 'table');
+        $Para = self::parameterCheck($UnionData, ['row_count', 'unlock'], 'table');
         self::tableChange($Para['unlock'], $Para['field']);
 
-        $Para['groupBy'] = null;
+        $Para['group_by'] = null;
         $QueryString = 'DELETE FROM' . self::getTableList($Para['table'],$Para['index']) . self::queryToSql($Para);
 
-        $StmtKey = self::createBind($QueryString, $Para['dbName']);
+        $StmtKey = self::createBind($QueryString, $Para['db_name']);
         self::bindData($StmtKey, $Para['field'], $Para['value'], '_Where_');
 
-        return self::execBind($StmtKey, $QueryString, $Para['rowCount'] ? 'RowCount' : '', $Para['debug']);
+        return self::execBind($StmtKey, $QueryString, $Para['row_count'] ? 'RowCount' : '', $Para['debug']);
     }
 
     //更新数据
     public static function update($UnionData = [])
     {
-        $Para = self::parameterCheck($UnionData, ['data', 'rowCount', 'unlock'], 'table');
+        $Para = self::parameterCheck($UnionData, ['data', 'row_count', 'unlock'], 'table');
         self::tableChange($Para['unlock'], $Para['field']);
 
         $DataSql = null;
@@ -526,14 +528,14 @@ class Db
         }
         $DataSql = substr($DataSql, 0, -1);
 
-        $Para['groupBy'] = null;
+        $Para['group_by'] = null;
         $QueryString = 'UPDATE' . self::getTableList($Para['table'],$Para['index']) . ' SET ' . $DataSql . self::queryToSql($Para);
 
-        $StmtKey = self::createBind($QueryString, $Para['dbName']);
+        $StmtKey = self::createBind($QueryString, $Para['db_name']);
         self::bindData($StmtKey, $Para['field'], $Para['value'], '_Where_');
         self::bindData($StmtKey, [], $Para['data'], '_Update_', true,true);
 
-        return self::execBind($StmtKey, $QueryString, $Para['rowCount'] ? 'RowCount' : '', $Para['debug']);
+        return self::execBind($StmtKey, $QueryString, $Para['row_count'] ? 'RowCount' : '', $Para['debug']);
     }
 
     //查询自定义语句

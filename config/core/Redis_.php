@@ -2,8 +2,8 @@
 $_SERVER['APIPHP']['Config']['core\Redis_']=[
 	'connect'=>[
         'default'=>[
-            'address'=>'localhost',
-            'password'=>'',
+            'address'=>'127.0.0.1',
+            'password'=>'@xcj19980510#',
             'dbnumber'=>0,
             'port'=>6379,
             'timeout'=>15

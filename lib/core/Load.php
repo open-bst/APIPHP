@@ -23,7 +23,7 @@ class Load
         $SizeInfo,
         $TypeInfo,
         $IgnoreErrorInfo
-    ) {
+    ): ?string {
         if ($FileError > 0) {
             $ModuleError = match ($FileError) {
                 1 => '3',
@@ -89,7 +89,6 @@ class Load
         $Number = Common::quickParameter($UnionData, 'number', '数量', false,1);
         $IgnoreError = Common::quickParameter($UnionData, 'ignore_error', '忽略错误', false, false);
 
-        $Path = Common::diskPath($Path);
         $Return = [];
         if (!empty($FieldCheck) && is_array($FieldCheck)) {
             foreach ($FieldCheck as $V) {
@@ -102,15 +101,17 @@ class Load
                         ['level' => 'F', 'detail' => 'Error#M.4.0' . "\r\n\r\n @ " . $TempField, 'code' => 'M.4.0']
                     );
                 }
-                $TempPath = $Path;
                 if (is_array($Path)) {
                     if (empty($Path[$TempField])) {
                         Api::wrong(
                             ['level' => 'F', 'detail' => 'Error#M.4.1' . "\r\n\r\n @ " . $TempField, 'code' => 'M.4.1']
                         );
                     } else {
-                        $TempPath = $Path[$TempField];
+                        $TempPath = Common::diskPath($Path[$TempField]);
                     }
+                }
+                else{
+                    $TempPath = Common::diskPath($Path);
                 }
                 $TempType = $Type;
                 if (is_array($Type)) {

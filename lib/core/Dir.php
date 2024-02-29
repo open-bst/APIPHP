@@ -55,9 +55,9 @@ class Dir
     }
 
     //目录大小调用
-    private static function sizeCall($Path)
+    private static function sizeCall($Path):int
     {
-        $DirSize = 0.00;
+        $DirSize = 0;
         if (file_exists($Path) && $DirHandle = @opendir($Path)) {
             while ($FileName = readdir($DirHandle)) {
                 if ($FileName != "." && $FileName != "..") {
@@ -71,10 +71,11 @@ class Dir
                 }
             }
             closedir($DirHandle);
-            return $DirSize;
         } else {
             Api::wrong(['level' => 'F', 'detail' => 'Error#M.0.0', 'code' => 'M.0.0']);
+
         }
+        return $DirSize;
     }
 
     //目录大小

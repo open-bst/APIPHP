@@ -25,7 +25,7 @@ class Setting
     }
 
     //数组转字符串
-    private static function arrayToStr($Array)
+    private static function arrayToStr($Array): string
     {
         $TempText = '[' . "\r\n";
         foreach ($Array as $K => $V) {
@@ -77,7 +77,7 @@ class Setting
     }
 
     //获取配置项的值
-    public static function get($UnionData = [])
+    public static function get($UnionData = []):mixed
     {
         $Module = Common::quickParameter($UnionData, 'module', '模块');
         $Name = Common::quickParameter($UnionData, 'name', '名称');
@@ -91,7 +91,7 @@ class Setting
     }
 
     //写入配置项
-    public static function set($UnionData = [])
+    public static function set($UnionData = []): void
     {
         $Namespace = Common::quickParameter($UnionData, 'namespace', '命名空间');
         $Module = Common::quickParameter($UnionData, 'path', '模块');
@@ -124,7 +124,7 @@ class Setting
     }
 
     //临时改变配置项
-    public static function change($UnionData = [])
+    public static function change($UnionData = []): void
     {
         $Module = Common::quickParameter($UnionData, 'module', '模块');
         $Name = Common::quickParameter($UnionData, 'name', '名称');

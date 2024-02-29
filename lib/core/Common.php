@@ -13,7 +13,7 @@ namespace core;
 class Common
 {
     //快捷传参
-    public static function quickParameter($UnionData, $Name, $Dialect, $Required = true, $Value = null, $Default = false)
+    public static function quickParameter($UnionData, $Name, $Dialect, $Required = true, $Value = null, $Default = false):mixed
     {
         if (isset($UnionData[$Name])) {
             return $UnionData[$Name];
@@ -43,16 +43,16 @@ class Common
     }
 
     //获取磁盘路径
-    public static function diskPath($Path)
+    public static function diskPath($Path): string
     {
         $Path = str_replace(['\\', '//'], ['/', '/'], $Path);
-        if (substr($Path, 0, 1) == '/') {
+        if (str_starts_with($Path, '/')) {
             $Path = substr($Path, 1);
         }
-        if (substr($Path, -1, 1) == '/') {
+        if (str_ends_with($Path, '/')) {
             $Path = substr($Path, 0, -1);
         }
-        if (substr($Path, 0, strlen(_ROOT)) != _ROOT) {
+        if (!str_starts_with($Path, _ROOT)) {
             $Path = _ROOT . '/' . $Path;
         }
 
@@ -60,7 +60,7 @@ class Common
     }
 
     //方法不存在
-    public static function unknownStaticMethod($ModuleName, $MethodName)
+    public static function unknownStaticMethod($ModuleName, $MethodName): void
     {
         Api::wrong(
             [

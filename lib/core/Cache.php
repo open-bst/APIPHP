@@ -14,7 +14,7 @@ class Cache
 {
 
     //写入缓存
-    private static function writeCache($Context, $FilePath)
+    private static function writeCache($Context, $FilePath): void
     {
         $Handle = @fopen($FilePath, 'w');
         if (!$Handle) {
@@ -27,7 +27,8 @@ class Cache
     }
 
     //查找钩子文件
-    private static function hookList($Path){
+    private static function hookList($Path): array
+    {
         $List=[];
         $PathArray=explode('/',$Path);
         if(count($PathArray)>2){
@@ -46,7 +47,8 @@ class Cache
     }
 
     //获取钩子代码
-    private static function hookCode($Path){
+    private static function hookCode($Path): string
+    {
         $List=self::hookList($Path);
         $Code='';
         foreach ($List as $V){
@@ -62,7 +64,8 @@ class Cache
     }
 
     //获取钩子代码改动状态
-    private static function hookChange($Path){
+    private static function hookChange($Path): bool
+    {
         $List=self::hookList($Path);
         foreach ($List as $V){
             $HookFile=self::fileInfo($V);
@@ -74,7 +77,7 @@ class Cache
     }
 
     //模板编译
-    private static function templateTranslate($Path,$From, $To, $CacheChanged)
+    private static function templateTranslate($Path,$From, $To, $CacheChanged): void
     {
         if ($CacheChanged && file_exists($From)) {
             if (filesize($From) > 0) {
@@ -195,7 +198,7 @@ class Cache
     }
 
     //重建所有缓存
-    public static function reBuild($Path = '')
+    public static function reBuild($Path = ''): void
     {
         $SourceDir = _ROOT . '/source';
         $DirHandle = @opendir($SourceDir . $Path);

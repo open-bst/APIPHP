@@ -11,17 +11,17 @@ namespace core;
   框架版本号：1.0.0
 */
 
-use Throwable;
+use Redis;
 
 class Data
 {
-    private static $Handle;
-    private static $Connect;
+    private static string $Handle;
+    private static Redis $Connect;
 
-    private static function initial(): bool
+    private static function initial(): void
     {
         if (!empty($_SERVER['APIPHP']['Runtime']['core\Data']['initial'])) {
-            return true;
+            return;
         }
 
         self::$Handle = strtolower($_SERVER['APIPHP']['Config']['core\Data']['handle']);
@@ -31,7 +31,6 @@ class Data
         }
 
         $_SERVER['APIPHP']['Runtime']['core\Data']['initial'] = true;
-        return true;
     }
 
     //设置
@@ -66,7 +65,7 @@ class Data
     }
 
     //获取
-    public static function get($UnionData = [])
+    public static function get($UnionData = []):mixed
     {
         $K = Common::quickParameter($UnionData, 'key', '键', true, null, true);
         $Prefix = Common::quickParameter($UnionData, 'prefix', '前缀', false, '');
@@ -101,7 +100,7 @@ class Data
     }
 
     //字符串转变量
-    private static function strToVar($String)
+    private static function strToVar($String):mixed
     {
         return unserialize($String);
     }
@@ -167,7 +166,7 @@ class Data
     }
 
     //获取文件缓存
-    private static function getByFile($Prefix, $K)
+    private static function getByFile($Prefix, $K):mixed
     {
         $FilePath = self::getFilePath($Prefix, $K);
         if (!file_exists($FilePath)) {
@@ -205,7 +204,7 @@ class Data
     }
 
     //获取Redis缓存
-    private static function getByRedis($Prefix, $K)
+    private static function getByRedis($Prefix, $K):mixed
     {
         $MD5 = md5($K);
         if ($Prefix != '') {

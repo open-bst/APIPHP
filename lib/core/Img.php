@@ -21,7 +21,7 @@ class Img
     }
 
     //图片支持检测
-    private static function mimeCheck($MIME)
+    private static function mimeCheck($MIME): void
     {
         $FileType = str_replace('image/', '', $MIME);
         $Support = array_key_exists(
@@ -96,7 +96,7 @@ class Img
     }
 
     //输出图片
-    public static function output($UnionData = [])
+    public static function output($UnionData = []): void
     {
         $ImgInfo = Common::quickParameter($UnionData, 'resource', '资源', true,null,true);
         $To = Common::quickParameter($UnionData, 'to', '目标路径', false);
@@ -146,7 +146,7 @@ class Img
     }
 
     //伸缩和水印
-    public static function change($UnionData = [])
+    public static function  change($UnionData = []): true|array
     {
         $From = Common::quickParameter($UnionData, 'image', '源图片');
         $DataType = strtolower(Common::quickParameter($UnionData, 'data_type', '资源类型', false, 'path'));
@@ -229,12 +229,12 @@ class Img
             ];
         }
 
-
-        self::output($NewImg, $To, $Quality, $MIME);
+        self::output(['resource'=>$NewImg, 'to'=>$To, 'quality'=>$Quality, 'mime'=>$MIME]);
+        return true;
     }
 
     //合并图片
-    public static function merge($UnionData = [])
+    public static function merge($UnionData = []): true|array
     {
         $Background = Common::quickParameter($UnionData, 'background', '背景');
         $Foreground = Common::quickParameter($UnionData, 'foreground', '前景');
@@ -289,6 +289,7 @@ class Img
             'quality'=>$Quality,
             'mime'=>$MIME
         ]);
+        return true;
     }
 
     public static function __callStatic($Method, $Parameters)

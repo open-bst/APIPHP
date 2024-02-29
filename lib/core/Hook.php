@@ -14,7 +14,7 @@ class Hook
 {
 
     //初始化
-    public static function initial()
+    public static function initial(): void
     {
         $_SERVER['APIPHP']['Runtime']['core\Hook']=[];
         $FilePath=_ROOT.'/source/hook.apiphp';
@@ -24,7 +24,7 @@ class Hook
     }
 
     //添加钩子方法
-    public static function add($UnionData = [])
+    public static function add($UnionData = []): void
     {
         $List = Common::quickParameter($UnionData, 'list', '列表',true,NULL,true);
         foreach ($List as $K => $V){
@@ -36,7 +36,7 @@ class Hook
     }
 
     //调用钩子
-    public static function call($UnionData = [])
+    public static function call($UnionData = []):mixed
     {
         $Name = Common::quickParameter($UnionData, 'name', '名称', true, null, true);
         $Para= Common::quickParameter($UnionData, 'parameter', '参数',false,[]);

@@ -12,16 +12,16 @@ namespace core;
 
 class Ip
 {
-    private static $BlackListFile;
-    private static $WhiteListFile;
-    private static $BlackList;
-    private static $WhiteList;
+    private static string $BlackListFile;
+    private static string $WhiteListFile;
+    private static array $BlackList;
+    private static array $WhiteList;
 
 
-    private static function initial(): bool
+    private static function initial(): void
     {
         if (!empty($_SERVER['APIPHP']['Runtime']['core\Ip']['initial'])) {
-            return true;
+            return;
         }
 
         self::$BlackListFile = _ROOT . '/temp/ip-blacklist.php';
@@ -46,11 +46,10 @@ class Ip
         self::$WhiteList = self::textToArray($WhiteListText);
 
         $_SERVER['APIPHP']['Runtime']['core\Ip']['initial'] = 1;
-        return true;
     }
 
     //转换
-    private static function transform($Str, $Start = true)
+    private static function transform($Str, $Start = true): false|string
     {
         if (ctype_digit($Str)) {
             return long2ip($Str);
@@ -112,7 +111,7 @@ class Ip
     }
 
     //移除
-    private static function remove($Type, $StartIPNumber, $EndIPNumber): bool
+    private static function remove($Type, $StartIPNumber, $EndIPNumber): void
     {
         if (strtolower($Type) == 'b') {
             $ListArray = self::$BlackList;
@@ -128,11 +127,10 @@ class Ip
                 }
             }
         }
-        return true;
     }
 
     //写入文件
-    private static function save($UnionData = [])
+    private static function save($UnionData = []): void
     {
         $Type = Common::quickParameter($UnionData, 'type', '类型', false, 'b');
         if (strtolower($Type) == 'b') {
@@ -230,7 +228,7 @@ class Ip
         if (!self::find(['type' => 'w', 'ip' => $IP]) && self::find(['type' => 'b', 'ip' => $IP])) {
             return false;
         }
-        return false;
+        return true;
     }
 
     //导出全部记录
@@ -282,7 +280,7 @@ class Ip
     }
 
     //清理
-    public static function clean($UnionData = [])
+    public static function clean($UnionData = []): void
     {
         $Type = Common::quickParameter($UnionData, 'type', '类型', true, null, true);
         $Reset = Common::quickParameter($UnionData, 'reset', '重置', false, false);

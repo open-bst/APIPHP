@@ -7,7 +7,7 @@ use core\Log;
 /*
   APIPHP开源框架
 
-  ©2023 APIPHP.com
+  ©2024 APIPHP.com
 
   框架版本号：1.0.0
 */
@@ -29,7 +29,7 @@ define('_DEBUG', $_SERVER['APIPHP']['Config']['core\Initial']['debug']);
 register_shutdown_function(['core\Initial', 'fatalErr']);
 set_error_handler(['core\Initial', 'sysErr'], E_ALL | E_STRICT);
 if($_SERVER['APIPHP']['Config']['core\Initial']['composer']){
-    require 'vendor/autoload.php';
+    require _ROOT .'/vendor/autoload.php';
 }
 spl_autoload_register(['core\Initial', 'autoload'],true,true);
 

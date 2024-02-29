@@ -10,7 +10,7 @@ namespace core;
   框架版本号：1.0.0
 */
 
-class Vcode
+class Captcha
 {
 
     //颜色转换
@@ -21,7 +21,7 @@ class Vcode
     }
 
     //验证码
-    public static function create($UnionData = [])
+    public static function create($UnionData = []): true|string
     {
         $Word = Common::quickParameter($UnionData, 'word', '文字', true, null, true);
         $Base64 = Common::quickParameter($UnionData, 'base64', 'base64', false, false);
@@ -33,7 +33,7 @@ class Vcode
         $Line = Common::quickParameter($UnionData, 'line', '线', false, 2);
         $NoiseHexColor = Common::quickParameter($UnionData, 'noise_color', '噪点颜色', false, '#ff6600');
 
-        $Font = Common::diskPath($_SERVER['APIPHP']['Config']['core\Vcode']['fontFile']);
+        $Font = Common::diskPath($_SERVER['APIPHP']['Config']['core\Captcha']['fontFile']);
 
         if (!file_exists($Font)) {
             Api::wrong(['level' => 'F', 'detail' => 'Error#M.10.0', 'code' => 'M.10.0']);

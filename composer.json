@@ -2,8 +2,8 @@
   "name": "open-bst/apiphp",
   "description": "a high-performance PHP development framework for APIs",
   "keywords": [
-    "framework",
     "apiphp",
+    "framework",
     "php"
   ],
   "homepage": "https://apiphp.com/",
@@ -21,7 +21,6 @@
     "ext-pdo": "*",
     "ext-pdo_mysql": "*",
     "ext-redis": "*",
-    "ext-ftp": "*",
     "ext-gd": "*",
     "ext-ctype": "*",
     "ext-curl": "*"

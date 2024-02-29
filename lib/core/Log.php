@@ -15,7 +15,7 @@ class Log
 {
 
     //获取等级
-    private static function getLevel($LevelName)
+    private static function getLevel($LevelName): int
     {
         if (strtolower($LevelName) == 'debug') {
             return 0;
@@ -28,7 +28,7 @@ class Log
         } elseif (strtolower($LevelName) == 'error') {
             return 4;
         } else {
-            return false;
+            return -1;
         }
     }
 
@@ -39,7 +39,7 @@ class Log
         $LevelName = Common::quickParameter($UnionData, 'level', '等级', false, 'info');
         $Level = self::getLevel($LevelName);
 
-        if ($Level === false) {
+        if ($Level === -1) {
             return false;
         }
 
@@ -99,7 +99,7 @@ class Log
 
         $ConfigLevel = self::getLevel($_SERVER['APIPHP']['Config']['core\Log']['level']);
 
-        if ($ConfigLevel === false) {
+        if ($ConfigLevel === -1) {
             return false;
         }
 
@@ -123,13 +123,13 @@ class Log
     }
 
     //清空日志
-    public static function clean()
+    public static function clean(): void
     {
         $_SERVER['APIPHP']['Log'] = [];
     }
 
     //获取累积日志
-    public static function get()
+    public static function get():array
     {
         return $_SERVER['APIPHP']['Log'];
     }

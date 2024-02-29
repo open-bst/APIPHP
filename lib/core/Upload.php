@@ -13,7 +13,7 @@ namespace core;
 class Upload
 {
     //获取规则
-    public static function getRule($UnionData = [])
+    public static function getRule($UnionData = []):mixed
     {
         $Code = Common::quickParameter($UnionData, 'code', '代码');
         $Refresh= Common::quickParameter($UnionData, 'refresh', '刷新',false,false);
@@ -106,7 +106,7 @@ class Upload
     {
         $Code = Common::quickParameter($UnionData, 'code', '代码');
         $Field = Common::quickParameter($UnionData, 'field', '字段');
-        $UID = Common::quickParameter($UnionData, 'uid', 'uid',false,'');
+        $Data = Common::quickParameter($UnionData, 'data', '数据',false,[]);
 
         $Rule=self::getRule(['code'=>$Code]);
         if(!$Rule){
@@ -131,7 +131,7 @@ class Upload
             }
         }
 
-        $Filename=\core\Load::up([
+        $Filename= Load::up([
             'field'=>[$Field.',TRUE'],
             'path'=>'/asset'.$Rule['save_path'],
             'type'=>implode(',',$Accept),
@@ -140,18 +140,22 @@ class Upload
 
         $Token=Tool::uuid(['type'=>'string']);
 
-        Db::insert([
+        $Config=[
             '表'=>[$_SERVER['APIPHP']['Config']['core\Upload']['fileTable']],
             '数据'=>[
                 'token'=>$Token,
-                'uid'=>$UID,
                 'original_name'=>$Rule['original']==1?substr($Filename[$Field][0][0],0,500):'',
                 'save_name'=>$Filename[$Field][0][1],
                 'rule'=>$Code,
                 'status'=>$Rule['default_status'],
                 'time'=>time()
             ],
-        ]);
+        ];
+        if(!empty($Data)){
+            $Config['数据']=$Config['数据']+$Data;
+        }
+
+        Db::insert($Config);
 
         return $Token;
     }

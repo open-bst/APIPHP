@@ -31,7 +31,7 @@ class Redis_
 
 
     //连接Redis
-    public static function connect($Name,$GetConnent=false)
+    public static function connect($Name,$GetConnent=false): \Redis
     {
         $Connect= new \Redis();
 
@@ -68,12 +68,10 @@ class Redis_
             );
         } catch (\RedisException $e) {
         }
-        if($GetConnent){
-            return $Connect;
-        }
-        else{
+        if(!$GetConnent){
             self::$Connect=$Connect;
         }
+        return $Connect;
     }
 
     public static function __callStatic($Method, $Parameters)

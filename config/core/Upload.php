@@ -1,8 +1,8 @@
 <?php
 
 $_SERVER['APIPHP']['Config']['core\Upload'] = [
-    'ruleTable'=>'sys_upload_rules',
-    'fileTable'=>'file_uploads',
+    'ruleTable'=>'sys_upload_rule',
+    'fileTable'=>'file_upload',
     'accept' => [
         'jpeg',
         'jpg',

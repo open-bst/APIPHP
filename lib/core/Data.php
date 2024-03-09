@@ -40,6 +40,7 @@ class Data
         $Value = Common::quickParameter($UnionData, 'value', '值');
         $Time = Common::quickParameter($UnionData, 'time', '时间', false, 3600);
         $Prefix = Common::quickParameter($UnionData, 'prefix', '前缀', false, '');
+        $Hash= Common::quickParameter($UnionData, 'hash', 'hash', false,false);
 
         self::initial();
 
@@ -59,7 +60,7 @@ class Data
             return self::setByFile($Prefix, $K, $Value, $Time);
         }
         if (self::$Handle == 'redis') {
-            return self::setByRedis($Prefix, $K, $Value, $Time);
+            return self::setByRedis($Prefix, $K, $Value,$Hash, $Time);
         }
         return true;
     }
@@ -71,6 +72,7 @@ class Data
         $Prefix = Common::quickParameter($UnionData, 'prefix', '前缀', false, '');
         $Callback = Common::quickParameter($UnionData, 'callback', '回调', false);
         $Argument = Common::quickParameter($UnionData, 'argument', '参数', false);
+        $Hash= Common::quickParameter($UnionData, 'hash', 'hash', false,false);
 
         self::initial();
 
@@ -80,7 +82,7 @@ class Data
         if (self::$Handle == 'file') {
             $Result = self::getByFile($Prefix, $K);
         } elseif (self::$Handle == 'redis') {
-            $Result = self::getByRedis($Prefix, $K);
+            $Result = self::getByRedis($Prefix, $K,$Hash);
         } else {
             return null;
         }
@@ -187,35 +189,49 @@ class Data
     }
 
     //设置Redis緩存
-    private static function setByRedis($Prefix, $K, $Value, $Time): bool
+    private static function setByRedis($Prefix, $Key, $Value,$Hash, $Time): bool
     {
-        $MD5 = md5($K);
-        if ($Prefix != '') {
+        if (!$Hash&&!empty($Prefix)) {
             $Prefix .= '_';
         }
         if ($Time < 1) {
-            self::$Connect->del($MD5);
+            if(!$Hash||empty($Prefix)){
+                self::$Connect->del($Prefix . md5($Key));
+            }
+            else{
+                self::$Connect->hDel($Prefix,md5($Key));
+            }
             return true;
         }
-        $Cache = self::varToStr($Value);
-        self::$Connect->set($Prefix . $MD5, $Cache);
-        self::$Connect->expire($Prefix . $MD5, $Time);
+        $Data = self::varToStr($Value);
+        if(!$Hash||empty($Prefix)){
+            $Key=$Prefix . md5($Key);
+            self::$Connect->set($Key, $Data);
+            self::$Connect->expire($Key, $Time);
+        }
+        else{
+            self::$Connect->hSet($Prefix,md5($Key), $Data);
+        }
         return true;
     }
 
     //获取Redis缓存
-    private static function getByRedis($Prefix, $K):mixed
+    private static function getByRedis($Prefix, $Key,$Hash):mixed
     {
-        $MD5 = md5($K);
-        if ($Prefix != '') {
+        if (!$Hash&&!empty($Prefix)) {
             $Prefix .= '_';
         }
-        $Cache = self::$Connect->get($Prefix . $MD5);
+        if(!$Hash||empty($Prefix)){
+            $Data = self::$Connect->get($Prefix . md5($Key));
+        }
+        else{
+            $Data = self::$Connect->hGet($Prefix,md5($Key));
+        }
 
-        if (!$Cache) {
+        if (!$Data) {
             return null;
         }
-        return self::strToVar($Cache);
+        return self::strToVar($Data);
     }
 
     public static function __callStatic($Method, $Parameters)

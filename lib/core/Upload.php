@@ -15,38 +15,41 @@ class Upload
     //获取规则
     public static function getRule($UnionData = []):mixed
     {
-        $Code = Common::quickParameter($UnionData, 'code', '代码');
+        $RuleCode = Common::quickParameter($UnionData, 'rule', '规则');
         $Refresh= Common::quickParameter($UnionData, 'refresh', '刷新',false,false);
         if($Refresh){
             Data::Set([
-                'prefix'=>'upload_rules',
-                'key'=>$Code,
+                'prefix'=>$_SERVER['APIPHP']['Config']['core\Upload']['rule_prefix'],
+                'key'=>$RuleCode,
                 'value'=>'',
+                'hash'=>true,
                 'time'=>0
             ]);
         }
         return Data::get([
-            'prefix'=>'upload_rules',
-            'key'=>$Code,
-            'callback'=>function($Code){
+            'prefix'=>$_SERVER['APIPHP']['Config']['core\Upload']['rule_prefix'],
+            'key'=>$RuleCode,
+            'hash'=>true,
+            'callback'=>function($RuleCode){
                 $Result= Db::select([
-                    '表'=>[$_SERVER['APIPHP']['Config']['core\Upload']['ruleTable']],
+                    '表'=>[$_SERVER['APIPHP']['Config']['core\Upload']['rule_table']],
                     '字段'=>['code'],
-                    '值'=>[$Code],
+                    '值'=>[$RuleCode],
+                    'json'=>['file_type','expand']
                 ]);
                 if(!$Result){
                     return false;
                 }
 
                 Data::Set([
-                    'prefix'=>'upload_rules',
-                    'key'=>$Code,
+                    'prefix'=>$_SERVER['APIPHP']['Config']['core\Upload']['rule_prefix'],
+                    'key'=>$RuleCode,
                     'value'=>$Result,
-                    'time'=>86400000
+                    'hash'=>true,
                 ]);
                 return $Result;
             },
-            'argument'=>$Code
+            'argument'=>$RuleCode
         ]);
     }
 
@@ -54,77 +57,105 @@ class Upload
     public static function query($UnionData = []): false|array
     {
         $Token = Common::quickParameter($UnionData, 'token', 'token');
-        $Code = Common::quickParameter($UnionData, 'code', '代码');
+        $RuleCode = Common::quickParameter($UnionData, 'rule', '规则');
+        $Reference=Common::quickParameter($UnionData, 'reference', '引用',false,false);
         $Refresh= Common::quickParameter($UnionData, 'refresh', '刷新',false,false);
+        $Field = Common::quickParameter($UnionData, 'field', '字段',false,[]);
 
-        if($Refresh){
+        if($Reference){
+            $Config=[
+                '表'=>[$_SERVER['APIPHP']['Config']['core\Upload']['file_table']],
+                '字段'=>['token'],
+                '值'=>[$Token],
+                '数据'=>[
+                    'reference'=>1
+                ],
+            ];
+
+            Db::update($Config);
+        }
+        if($Refresh||$Reference){
             Data::Set([
-                'prefix'=>'upload_files',
+                'prefix'=>$_SERVER['APIPHP']['Config']['core\Upload']['file_prefix'],
                 'key'=>$Token,
                 'value'=>'',
+                'hash'=>true,
                 'time'=>0
             ]);
         }
         $File=Data::get([
-            'prefix'=>'upload_files',
+            'prefix'=>$_SERVER['APIPHP']['Config']['core\Upload']['file_prefix'],
             'key'=>$Token,
-            'callback'=>function($Token){
-                $Result= Db::select([
-                    '表'=>[$_SERVER['APIPHP']['Config']['core\Upload']['fileTable']],
+            'hash'=>true,
+            'callback'=>function($Argument){
+                $Config=[
+                    '表'=>[$_SERVER['APIPHP']['Config']['core\Upload']['file_table']],
                     '字段'=>['token'],
-                    '值'=>[$Token],
-                ]);
+                    '值'=>[$Argument['token']],
+                ];
+                $Result= Db::select($Config);
                 if(!$Result){
                     return false;
                 }
 
                 Data::Set([
-                    'prefix'=>'upload_files',
-                    'key'=>$Token,
+                    'prefix'=>$_SERVER['APIPHP']['Config']['core\Upload']['file_prefix'],
+                    'key'=>$Argument['token'],
                     'value'=>$Result,
-                    'time'=>86400000
+                    'hash'=>true,
                 ]);
                 return $Result;
             },
-            'argument'=>$Token
+            'argument'=>['token'=>$Token]
         ]);
 
         if(!$File){
             return false;
         }
 
-        $Rule=self::getRule(['code'=>$File['rule']]);
-        if(!$Rule||$File['rule']!=$Code){
+        $Rule=self::getRule(['rule'=>$File['rule']]);
+        if(!$Rule||$File['rule']!=$RuleCode){
             return false;
         }
 
-        return ['path'=>'/asset'.$Rule['save_path'].'/'.$File['save_name'],'uid'=>$File['uid']];
+        $Return=[
+            'path'=>'/asset'.$Rule['save_path'].'/'.$File['save_name'],
+            'time'=>$File['time'],
+            'data'=>[]
+        ];
+
+        foreach ($Field as $V){
+            if(isset($File[$V])){
+                $Return['data'][$V]=$File[$V];
+            }
+        }
+
+        return $Return;
     }
 
     //上传
     public static function load($UnionData = []): string
     {
-        $Code = Common::quickParameter($UnionData, 'code', '代码');
-        $Field = Common::quickParameter($UnionData, 'field', '字段');
+        $RuleCode = Common::quickParameter($UnionData, 'rule', '规则');
+        $Name = Common::quickParameter($UnionData, 'name', '名称');
         $Data = Common::quickParameter($UnionData, 'data', '数据',false,[]);
 
-        $Rule=self::getRule(['code'=>$Code]);
+        $Rule=self::getRule(['rule'=>$RuleCode]);
         if(!$Rule){
             Api::wrong(
                 [
                     'level' => 'F',
-                    'detail' => 'Error#M.14.0' . "\r\n\r\n @ ".$Code,
+                    'detail' => 'Error#M.14.0' . "\r\n\r\n @ ".$RuleCode,
                     'code' => 'M.14.0'
                 ]
             );
         }
-        $Accept=json_decode($Rule['file_type'], true);
-        foreach ($Accept as $V){
-            if(!in_array($V,$_SERVER['APIPHP']['Config']['core\Upload']['accept'])){
+        foreach ($Rule['file_type'] as $V){
+            if(!isset($_SERVER['APIPHP']['Config']['core\Upload']['accept'][$V])){
                 Api::wrong(
                     [
                         'level' => 'F',
-                        'detail' => 'Error#M.14.1' . "\r\n\r\n @ ".$Code,
+                        'detail' => 'Error#M.14.1' . "\r\n\r\n @ ".$RuleCode,
                         'code' => 'M.14.1'
                     ]
                 );
@@ -132,21 +163,21 @@ class Upload
         }
 
         $Filename= Load::up([
-            'field'=>[$Field.',TRUE'],
+            'field'=>[$Name.',TRUE'],
             'path'=>'/asset'.$Rule['save_path'],
-            'type'=>implode(',',$Accept),
+            'type'=>implode(',',$Rule['file_type']),
             'size'=>$Rule['size']
         ]);
 
         $Token=Tool::uuid(['type'=>'string']);
 
         $Config=[
-            '表'=>[$_SERVER['APIPHP']['Config']['core\Upload']['fileTable']],
+            '表'=>[$_SERVER['APIPHP']['Config']['core\Upload']['file_table']],
             '数据'=>[
                 'token'=>$Token,
-                'original_name'=>$Rule['original']==1?substr($Filename[$Field][0][0],0,500):'',
-                'save_name'=>$Filename[$Field][0][1],
-                'rule'=>$Code,
+                'original_name'=>$Rule['original']==1?substr($Filename[$Name][0][0],0,500):'',
+                'save_name'=>$Filename[$Name][0][1],
+                'rule'=>$RuleCode,
                 'status'=>$Rule['default_status'],
                 'time'=>time()
             ],
@@ -158,6 +189,11 @@ class Upload
         Db::insert($Config);
 
         return $Token;
+    }
+
+    public static function getAccept()
+    {
+        return $_SERVER['APIPHP']['Config']['core\Upload']['accept'];
     }
 
 

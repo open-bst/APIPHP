@@ -38,9 +38,9 @@ class Filter
     }
 
     //类型转换
-    public static function convertType($Val,$Type):mixed
+    private static function convertType($Val,$Type):mixed
     {
-        if($Type===''){
+        if($Type===''||$Type==='*'){
             return $Val;
         }
         $ArrayMode=is_array($Val);
@@ -62,7 +62,7 @@ class Filter
             else if($Type=='int'){
                 $V=intval($V);
             }
-            else if(intval(str_replace('float','',$Type))>0){
+            else if(str_contains($Type,'float')&&intval(str_replace('float','',$Type))>0){
                 $V=round(floatval($V),intval($Type));
             }
             $Result[$K]=$V;
@@ -136,6 +136,7 @@ class Filter
         $Data = Common::quickParameter($UnionData, 'data', '数据', false, []);
         $ReturnObj=Common::quickParameter($UnionData, 'return_object', '返回对象', false, false);
         $Template=Common::quickParameter($UnionData, 'template', '模板', false, []);
+        $CallbackList=Common::quickParameter($UnionData, 'callback', '回调', false, []);
         $Mode = strtolower($Mode);
         $Return=[];
 
@@ -175,7 +176,7 @@ class Filter
             $Check=self::$LastCheck['result'][$K]['exist']=$TempData !== null;
             $OpType=self::convertName($TempOp[0]);
             if($Check){
-                if(!in_array($OpType,['string','double','integer','boolean','json','object','array'])){
+                if(!in_array($OpType,['*','string','double','integer','boolean','json','object','array'])){
                     Api::wrong(['level' => 'F', 'detail' => 'Error#M.7.1' . "\r\n\r\n @ " . $OpType, 'code' => 'M.7.0']);
                 }
                 if($OpType=='json'||$OpType=='object'||$OpType=='array'){
@@ -188,7 +189,7 @@ class Filter
                         $Return[$K]=self::objCheck(
                             $Obj,
                             json_decode(empty($Template[$K])?'':$Template[$K]),
-                            !empty($TempOp[3])&&$TempOp[3]=='convert_type'
+                            $CallbackList
                         );
                         if(is_object($Return[$K])&&!$ReturnObj){
                             $Return[$K]=self::o2a($Return[$K]);
@@ -236,13 +237,19 @@ class Filter
         return $Return;
     }
 
-    private static function objCheck($Obj,$Template,$Convert):object|false
+    private static function objCheck($Obj,$Template,$CallbackList):object|array|false
     {
-        if(!is_object($Template)||!isset($Template->__self)||!is_string($Template->__self)){
-            self::$LastCheck['object_key']='__self';
+
+        if(!is_object($Template)){
+            self::$LastCheck['object_key']='__template';
             return false;
         }
+        if(!isset($Template->__self)||!is_string($Template->__self)){
+            $Template->__self='object';
+        }
+
         $Self = explode(',', $Template->__self);
+        $Callback=isset($Template->__callback)&&is_object($Template->__callback)?$Template->__callback:new \stdClass();
         $Optional=isset($Template->__optional)&&is_array($Template->__optional)?$Template->__optional:[];
         $Key=isset($Template->__key)&&is_string($Template->__key)?$Template->__key:'';
         if(gettype($Obj)!=$Self[0]||!in_array($Self[0],['object','array'])){
@@ -255,7 +262,7 @@ class Filter
             $Count=count(is_array($Obj)?$Obj:get_object_vars($Obj));
             $Self[2]=$Self[2]??'*';
             if($Count<intval($Self[1])||($Self[2]!='*'&&$Count>intval($Self[2]))){
-                self::$LastCheck['object_key']='__default';
+                self::$LastCheck['object_key']='__self';
                 return false;
             }
         }
@@ -264,6 +271,9 @@ class Filter
         foreach ($Obj as $K => $V){
             self::$LastCheck['object_key']=$K;
             $T=$Template->$K??null;
+            if($T=='*'&&isset($Callback->$K)&&isset($CallbackList[$Callback->$K])){
+                $T=strval($CallbackList[$Callback->$K]($Obj));
+            }
             if(empty($T)){
                 if(!$Strict){
                     if(!empty($Key)){
@@ -284,7 +294,12 @@ class Filter
                             }
                         }
                     }
-                    $T=$Template->__default;
+                    if(is_object($Template->__default)){
+                        $T= clone $Template->__default;
+                    }
+                    else{
+                        $T=$Template->__default;
+                    }
                 }
                 else{
                     return false;
@@ -296,46 +311,57 @@ class Filter
             }
 
             if(is_object($T)){
-                $Obj->$K=self::objCheck($V,$T,$Convert);
-                if(!$Obj->$K){
+                if(($V=self::objCheck($V,$T,$CallbackList))===false){
                     return false;
+                }
+                if(is_object($Obj)){
+                    $Obj->$K=$V;
+                }
+                else{
+                    $Obj[$K]=$V;
                 }
             }
             elseif(is_string($T)){
 
                 $TempOp=explode(',',$T);
-                $OpType=self::convertName($TempOp[0]);
-                if(!in_array($OpType,['string','double','integer','boolean','json','object'])){
-                    Api::wrong(['level' => 'F', 'detail' => 'Error#M.7.1' . "\r\n\r\n @ " . $OpType, 'code' => 'M.7.0']);
-                }
-                $Type=gettype($V);
-                if($Type!=$OpType){
-                    if($Convert&&in_array($Type,['string','double','integer','boolean'])){
-                        if(is_array($V)){
-                            $V=$Obj[$K]=self::convertType($V,$TempOp[0]);
+                if($TempOp[0]!='*'){
+                    $OpType=self::convertName($TempOp[0]);
+                    if(!in_array($OpType,['*','string','double','integer','boolean','json','object'])){
+                        Api::wrong(['level' => 'F', 'detail' => 'Error#M.7.1' . "\r\n\r\n @ " . $OpType, 'code' => 'M.7.0']);
+                    }
+                    $Type=gettype($V);
+                    if($Type!=$OpType){
+                        if(isset($TempOp[3])&&$TempOp[3]=='convert_type'&&in_array($Type,['string','double','integer','boolean'])){
+                            if(is_array($V)){
+                                $V=$Obj[$K]=self::convertType($V,$TempOp[0]);
+                            }
+                            else{
+                                $V=$Obj->$K=self::convertType($V,$TempOp[0]);
+                            }
+                            $Type=gettype($V);
                         }
                         else{
-                            $V=$Obj->$K=self::convertType($V,$TempOp[0]);
+                            $NType=['integer','double'];
+
+                            if(!in_array($Type,$NType)||!in_array($OpType,$NType)||!(intval($V)-floatval($V)===0.0)){
+                                return false;
+                            }
                         }
-                        $Type=gettype($V);
                     }
-                    else{
-                        return false;
-                    }
-                }
-                if(isset($TempOp[1])){
-                    if($Type=='string'){
-                        if(!self::lengthCheck($TempOp[1], $TempOp[2]??'*',$V)){
+                    if(isset($TempOp[1])){
+                        if($Type=='string'){
+                            if(!self::lengthCheck($TempOp[1], $TempOp[2]??'*',$V)){
+                                return false;
+                            }
+                        }
+                        elseif ($Type=='integer'||$Type=='double'){
+                            if(!self::valueCheck(self::convertType($TempOp[1],$Type),isset($TempOp[2])?self::convertType($TempOp[2],$Type):'*',$V)){
+                                return false;
+                            }
+                        }
+                        if(!empty($TempOp[3])&&!self::ruleCheck($V,$TempOp[3])){
                             return false;
                         }
-                    }
-                    elseif ($Type=='integer'||$Type=='double'){
-                        if(!self::valueCheck(self::convertType($TempOp[1],$Type),isset($TempOp[2])?self::convertType($TempOp[2],$Type):'*',$V)){
-                            return false;
-                        }
-                    }
-                    if(!empty($TempOp[3])&&!self::ruleCheck($V,$TempOp[3])){
-                        return false;
                     }
                 }
             }
@@ -344,7 +370,7 @@ class Filter
             }
         }
         foreach ($Template as $K=>$V){
-            if(!empty($V)&&!in_array($K,$Optional)&&!in_array($K,['__self','__key','__optional','__default'])){
+            if(!empty($V)&&!in_array($K,$Optional)&&!in_array($K,['__self','__key','__optional','__default','__callback'])){
                 self::$LastCheck['object_key']=$K;
                 return false;
             }

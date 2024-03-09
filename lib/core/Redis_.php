@@ -10,16 +10,17 @@ namespace core;
   框架版本号：1.0.0
 */
 
+use Redis;
 use Throwable;
 
 class Redis_
 {
     //连接Redis
-    public static function connect($UnionData = []): \Redis
+    public static function connect($UnionData = []): Redis|null
     {
         $Name = Common::quickParameter($UnionData, 'name', '名称');
         $ReturnConnect = Common::quickParameter($UnionData, 'return_connect', '返回连接', false, false);
-        $Connect= new \Redis();
+        $Connect= new Redis();
 
 
         $Config=$_SERVER['APIPHP']['Config']['core\Redis_']['connect'];
